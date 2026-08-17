@@ -1,0 +1,40 @@
+dialogue-avatar
+├── README.md
+├── requirements
+│   ├── ditto.txt
+│   └── maai.txt
+├── config
+│   ├── base.yaml
+│   ├── ditto.yaml
+│   └── benchmark.yaml
+├── assets
+│   ├── portraits
+│   └── audio
+├── src
+│   ├── avatar
+│   │   ├── ditto_adapter.py
+│   │   └── motion_controller.py
+│   ├── behavior
+│   │   └── maai_adapter.py
+│   ├── controller
+│   │   ├── states.py
+│   │   └── conversation_controller.py
+│   ├── audio
+│   │   ├── audio_chunks.py
+│   │   └── jitter_buffer.py
+│   └── utils
+│       ├── logger.py
+│       └── metrics.py
+├── scripts
+│   ├── check_environment.py
+│   ├── test_ditto_file.py
+│   ├── test_ditto_stream.py
+│   ├── test_maai.py
+│   └── benchmark.py
+├── tests
+│   ├── test_states.py
+│   ├── test_audio_chunks.py
+│   └── test_controller.py
+├── results
+│   └── experiments
+└── logs
