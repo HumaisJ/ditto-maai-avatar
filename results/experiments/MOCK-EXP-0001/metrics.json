@@ -1,0 +1,12 @@
+{
+  "audio_duration_sec": 221.379,
+  "average_gpu_utilization_percent": null,
+  "effective_generation_fps": null,
+  "inference_time_sec": 0.0006087999936426058,
+  "maximum_gpu_utilization_percent": null,
+  "mock": true,
+  "output_frame_count": null,
+  "output_video_duration_sec": null,
+  "peak_vram_mb": null,
+  "real_time_factor": 2.7500349791199973e-06
+}

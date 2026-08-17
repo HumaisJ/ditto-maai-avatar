@@ -7,5 +7,3 @@ __pycache__/
 
 logs/**
 !logs/.gitkeep
-results/experiments/**
-!results/experiments/.gitkeep

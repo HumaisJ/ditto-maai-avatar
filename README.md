@@ -4,6 +4,9 @@ This repository is the controlled research workspace for a real-time dialogue av
 Ditto, MaAI, and a small motion controller. Development proceeds in measured stages; the current
 local infrastructure does not install or run either model.
 
+Current progress, evidence, and the next approved checkpoint are maintained in
+[`PROJECT_TIMELINE.md`](PROJECT_TIMELINE.md).
+
 ## Local development environment
 
 Create the isolated environment without modifying Conda `base`:
@@ -67,3 +70,6 @@ python scripts/check_project.py
 
 Do not begin model installation or GPU experiments until the relevant stage has been discussed and
 approved.
+
+Windows GPU environment preparation is documented in
+[`docs/GPU_SETUP_WINDOWS.md`](docs/GPU_SETUP_WINDOWS.md).

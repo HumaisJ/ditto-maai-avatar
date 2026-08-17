@@ -1,0 +1,16 @@
+{
+  "experiment": {
+    "hash_algorithm": "sha256",
+    "id_width": 4,
+    "timestamp_timezone": "UTC"
+  },
+  "mock": {
+    "backend": "mock",
+    "precision": "not_applicable",
+    "seed": 42
+  },
+  "project": {
+    "logs_dir": "logs",
+    "results_dir": "results/experiments"
+  }
+}

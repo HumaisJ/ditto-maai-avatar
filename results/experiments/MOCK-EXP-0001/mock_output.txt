@@ -1,0 +1,3 @@
+Mock output for P001
+Portrait: assets/portraits/agatha_christie.jpg
+Audio: assets/audio/bungo_stray_dogs_namae_wo_yobu_yo_acapella.wav

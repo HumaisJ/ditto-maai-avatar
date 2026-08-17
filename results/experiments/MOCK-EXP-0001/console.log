@@ -1,0 +1,3 @@
+2026-08-17T16:40:40Z | INFO | Experiment initialized: MOCK-EXP-0001
+2026-08-17T16:40:40Z | INFO | Mock output created; GPU sample available: True
+2026-08-17T16:40:40Z | INFO | Experiment completed with status: succeeded

@@ -1,0 +1,2 @@
+timestamp_utc,gpu_name,utilization_gpu_percent,memory_used_mb,memory_total_mb
+2026-08-17T16:40:40.830445Z,NVIDIA T600 Laptop GPU,30,511,4096

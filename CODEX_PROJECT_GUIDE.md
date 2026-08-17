@@ -47,6 +47,20 @@ Every piece of work must follow:
 
 Never skip directly to implementation.
 
+### Project timeline requirement
+
+Maintain `PROJECT_TIMELINE.md` as the permanent roadmap and append-only checkpoint log.
+
+After every small milestone:
+
+1. Complete verification first.
+2. Record the result, evidence, tests, important decisions, and next step in the timeline.
+3. Update the active goal and roadmap status.
+4. Include the timeline update in the milestone commit.
+
+Do not mark a milestone complete without verification. Record failed or blocked milestones instead
+of deleting their evidence.
+
 ---
 
 ## Rule 3 — Work one small step at a time

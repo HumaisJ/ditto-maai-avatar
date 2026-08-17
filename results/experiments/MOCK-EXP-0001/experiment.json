@@ -1,0 +1,44 @@
+{
+  "completed_at_utc": "2026-08-17T16:40:40.830445Z",
+  "created_at_utc": "2026-08-17T16:40:40.623195Z",
+  "error": null,
+  "experiment_id": "MOCK-EXP-0001",
+  "git_commit": "6e947138d0041fc4c46eb3ce330d460977ccae00",
+  "inputs": {
+    "audio": {
+      "duration_sec": 221.3790625,
+      "path": "assets/audio/bungo_stray_dogs_namae_wo_yobu_yo_acapella.wav",
+      "sha256": "0a1e932f1f0a07962052ed9abf798cf1d644bc1be98a82f392d8aadc55067721",
+      "size_bytes": 42504858
+    },
+    "portrait": {
+      "duration_sec": null,
+      "path": "assets/portraits/agatha_christie.jpg",
+      "sha256": "3aed290d94965e0697feb731cf71c1edb0125f260a5b06af14e87741ddc064ac",
+      "size_bytes": 210466
+    }
+  },
+  "model": {
+    "backend": "mock",
+    "checkpoint_version": null,
+    "name": "mock_renderer",
+    "precision": "not_applicable"
+  },
+  "purpose": "Verify local experiment recording infrastructure.",
+  "requested_output_path": "results/experiments/MOCK-EXP-0001/mock_output.txt",
+  "started_at_utc": "2026-08-17T16:40:40.623195Z",
+  "status": "succeeded",
+  "system": {
+    "cuda_visible_to_pytorch": null,
+    "git_commit": "6e947138d0041fc4c46eb3ce330d460977ccae00",
+    "gpu": {
+      "driver_version": "573.44",
+      "memory_total_mb": 4096.0,
+      "name": "NVIDIA T600 Laptop GPU"
+    },
+    "operating_system": "Windows-11-10.0.26200-SP0",
+    "python_executable": "C:\\Users\\humai\\anaconda3\\envs\\avatar-dev\\python.exe",
+    "python_version": "3.12.13",
+    "pytorch_version": null
+  }
+}
