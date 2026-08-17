@@ -46,8 +46,8 @@ def run_command(command: list[str], *, timeout: int = 30) -> tuple[int, str]:
     return result.returncode, output
 
 
-def query_nvidia_smi() -> tuple[dict[str, Any] | None, str, list[str]]:
-    """Return first-GPU facts, raw output, and active compute-process rows."""
+def query_nvidia_smi(gpu_index: int = 0) -> tuple[dict[str, Any] | None, str, list[str]]:
+    """Return selected-GPU facts, raw output, and its active compute-process rows."""
     executable = shutil.which("nvidia-smi")
     if executable is None:
         return None, "nvidia-smi not found", []
@@ -56,7 +56,7 @@ def query_nvidia_smi() -> tuple[dict[str, Any] | None, str, list[str]]:
         executable,
         "--query-gpu=name,memory.total,driver_version,utilization.gpu",
         "--format=csv,noheader,nounits",
-        "--id=0",
+        f"--id={gpu_index}",
     ]
     code, raw_gpu = run_command(query)
     if code != 0 or not raw_gpu:
@@ -69,6 +69,7 @@ def query_nvidia_smi() -> tuple[dict[str, Any] | None, str, list[str]]:
         executable,
         "--query-compute-apps=pid,process_name,used_memory",
         "--format=csv,noheader,nounits",
+        f"--id={gpu_index}",
     ]
     _, raw_processes = run_command(process_query)
     processes = [line.strip() for line in raw_processes.splitlines() if line.strip()]
@@ -243,12 +244,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-vram-mb", type=float, default=15_000)
     parser.add_argument("--min-driver", default="570.65")
     parser.add_argument("--max-utilization", type=float, default=20)
+    parser.add_argument("--gpu-index", type=int, default=0)
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    gpu, nvidia_output, processes = query_nvidia_smi()
+    gpu, nvidia_output, processes = query_nvidia_smi(args.gpu_index)
     ffmpeg = shutil.which("ffmpeg")
     snapshot = {
         "operating_system": platform.system(),
@@ -258,6 +260,7 @@ def main(argv: list[str] | None = None) -> int:
         "conda_prefix_name": Path(os.environ.get("CONDA_PREFIX", "")).name or None,
         "conda_environment": os.environ.get("CONDA_DEFAULT_ENV"),
         "ffmpeg": ffmpeg,
+        "selected_gpu_index": args.gpu_index,
         "gpu": gpu,
         "compute_processes": processes,
         "pytorch": collect_torch_info(),

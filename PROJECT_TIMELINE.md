@@ -7,7 +7,8 @@ it is not silently removed or marked complete.
 ## Current checkpoint
 
 - **Active goal:** Goal 2 — validate an isolated GPU environment.
-- **Current stage:** D2 Windows environment package prepared; awaiting execution on the shared GPU.
+- **Current stage:** D2 Windows environment package prepared for the Git-free GPU workflow;
+  awaiting execution on GPU 0 of the shared machine.
 - **Last completed stage:** D1 — local experiment infrastructure.
 - **Next decision:** Review the GPU environment report before installing Ditto or checkpoints.
 - **Blocked:** No. Remote validation is awaiting the prepared PowerShell workflow.
@@ -90,6 +91,22 @@ it is not silently removed or marked complete.
   `results/environment/D2-GPU-ENV-*` report. Ditto, checkpoints, and TensorRT remain uninstalled.
 - **Next step:** Push the prepared repository, run the documented D2 PowerShell command on the GPU
   machine, and return its preserved report for review.
+
+### 2026-08-17 — D2 Git-free shared-GPU preparation
+
+- **Result:** Complete locally; remote D2 validation pending.
+- **Goal/stage:** Goal 2 / Stage D2.
+- **Work:** Removed the Git/Git LFS requirement from GPU setup, added explicit GPU selection, scoped
+  compute-process safety checks to the selected GPU, and documented PC-to-GPU folder transfer.
+- **Files/evidence:** `scripts/gpu/setup_ditto_env.ps1`, `scripts/check_environment.py`,
+  `docs/GPU_SETUP_WINDOWS.md`, and focused regression tests.
+- **Verification:** Ruff passed and all 55 tests passed, including PowerShell parsing and selected-GPU
+  process-filtering checks.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** D2 will use idle GPU 0. GPU 1 is occupied by another user's two Python
+  processes and must remain untouched. D2 is not complete until a passing GPU report is returned.
+- **Next step:** Copy the materialized project folder to the GPU machine and run the guarded D2 setup
+  with `-GpuIndex 0`.
 
 ## Entry template
 

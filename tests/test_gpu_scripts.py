@@ -45,3 +45,12 @@ def test_setup_script_does_not_install_ditto_or_tensorrt() -> None:
     assert "tensorrt" not in content
     assert "ditto-talkinghead" not in content
     assert "huggingface" not in content
+
+
+def test_setup_script_uses_selected_gpu_without_requiring_git() -> None:
+    content = GPU_SCRIPTS[0].read_text(encoding="utf-8")
+    assert '[int]$GpuIndex = 0' in content
+    assert '--id=$GpuIndex' in content
+    assert '$env:CUDA_VISIBLE_DEVICES = "$GpuIndex"' in content
+    assert '@("conda", "git", "nvidia-smi")' not in content
+    assert "git lfs version" not in content

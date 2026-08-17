@@ -44,6 +44,26 @@ def test_evaluate_environment_accepts_valid_blackwell_snapshot() -> None:
     assert check_environment.evaluate_environment(_valid_snapshot()) == []
 
 
+def test_query_nvidia_smi_limits_queries_to_selected_gpu(monkeypatch) -> None:
+    calls: list[list[str]] = []
+
+    def fake_run(command: list[str], *, timeout: int = 30) -> tuple[int, str]:
+        calls.append(command)
+        if "--query-gpu=name,memory.total,driver_version,utilization.gpu" in command:
+            return 0, "NVIDIA GeForce RTX 5060 Ti, 16311, 591.86, 0"
+        return 0, ""
+
+    monkeypatch.setattr(check_environment.shutil, "which", lambda _: "nvidia-smi.exe")
+    monkeypatch.setattr(check_environment, "run_command", fake_run)
+
+    gpu, _, processes = check_environment.query_nvidia_smi(gpu_index=0)
+
+    assert gpu is not None
+    assert processes == []
+    assert len(calls) == 2
+    assert all("--id=0" in command for command in calls)
+
+
 @pytest.mark.parametrize(
     ("mutation", "expected_error"),
     [

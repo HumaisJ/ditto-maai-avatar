@@ -1,5 +1,7 @@
 param(
-    [string]$ProjectRoot = ""
+    [string]$ProjectRoot = "",
+    [ValidateRange(0, 31)]
+    [int]$GpuIndex = 0
 )
 
 Set-StrictMode -Version Latest
@@ -50,13 +52,11 @@ try {
     if ([System.Environment]::OSVersion.Platform -ne [System.PlatformID]::Win32NT) {
         throw "This setup script supports Windows only."
     }
-    foreach ($command in @("conda", "git", "nvidia-smi")) {
+    foreach ($command in @("conda", "nvidia-smi")) {
         if (-not (Get-Command $command -ErrorAction SilentlyContinue)) {
             throw "Required command is unavailable: $command"
         }
     }
-    git lfs version | Out-Null
-    if ($LASTEXITCODE -ne 0) { throw "Git LFS is unavailable." }
     if (-not (Test-Path -LiteralPath $environmentFile -PathType Leaf)) {
         throw "Environment definition is missing: $environmentFile"
     }
@@ -64,7 +64,7 @@ try {
     $largestAudio = Get-ChildItem -LiteralPath (Join-Path $ProjectRoot "assets\audio") -Filter "*.wav" -File |
         Sort-Object Length -Descending | Select-Object -First 1
     if ($null -eq $largestAudio -or $largestAudio.Length -lt 1MB) {
-        throw "Git LFS audio assets are not materialized. Run 'git lfs pull' first."
+        throw "Audio assets are missing or were copied as placeholders. Copy the materialized project assets from the development PC."
     }
 
     $drive = Get-PSDrive -Name ([System.IO.Path]::GetPathRoot($ProjectRoot).TrimEnd('\').TrimEnd(':'))
@@ -72,7 +72,7 @@ try {
         throw "At least 20 GiB of free disk space is required."
     }
 
-    $gpuLine = nvidia-smi --query-gpu=name,memory.total,driver_version,utilization.gpu --format=csv,noheader,nounits --id=0
+    $gpuLine = nvidia-smi --query-gpu=name,memory.total,driver_version,utilization.gpu --format=csv,noheader,nounits --id=$GpuIndex
     if ($LASTEXITCODE -ne 0 -or -not $gpuLine) { throw "Unable to query the first NVIDIA GPU." }
     $gpuValues = $gpuLine.Split(',') | ForEach-Object { $_.Trim() }
     if ($gpuValues.Count -ne 4) { throw "Unexpected nvidia-smi GPU output: $gpuLine" }
@@ -82,8 +82,8 @@ try {
     if ([double]$gpuValues[3] -gt $maximumUtilization) {
         throw "GPU utilization exceeds the 20 percent safety threshold."
     }
-    $computeProcesses = nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv,noheader,nounits
-    if ($computeProcesses) { throw "Another compute process is using the shared GPU: $computeProcesses" }
+    $computeProcesses = nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv,noheader,nounits --id=$GpuIndex
+    if ($computeProcesses) { throw "Another compute process is using GPU $GpuIndex`: $computeProcesses" }
 
     $environmentData = conda env list --json | ConvertFrom-Json
     $existingEnvironment = $environmentData.envs | Where-Object {
@@ -111,7 +111,8 @@ try {
     if ($baseBefore -ne $baseAfter) { throw "Conda base changed during setup; stop and review." }
 
     Write-Host "Running D2 CUDA validation..."
-    conda run -n $environmentName python (Join-Path $ProjectRoot "scripts\check_environment.py")
+    $env:CUDA_VISIBLE_DEVICES = "$GpuIndex"
+    conda run -n $environmentName python (Join-Path $ProjectRoot "scripts\check_environment.py") --gpu-index $GpuIndex
     if ($LASTEXITCODE -ne 0) {
         $validationReportCreated = $true
         throw "D2 environment validation failed; preserve its report."
