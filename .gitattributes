@@ -1,0 +1,4 @@
+assets/portraits/*.jpg filter=lfs diff=lfs merge=lfs -text
+assets/portraits/*.jpeg filter=lfs diff=lfs merge=lfs -text
+assets/portraits/*.png filter=lfs diff=lfs merge=lfs -text
+assets/audio/*.wav filter=lfs diff=lfs merge=lfs -text
