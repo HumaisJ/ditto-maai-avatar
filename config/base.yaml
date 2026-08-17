@@ -1,0 +1,13 @@
+project:
+  results_dir: results/experiments
+  logs_dir: logs
+
+experiment:
+  id_width: 4
+  hash_algorithm: sha256
+  timestamp_timezone: UTC
+
+mock:
+  backend: mock
+  precision: not_applicable
+  seed: 42
