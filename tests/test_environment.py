@@ -41,6 +41,12 @@ def test_parse_version(version: str, expected: tuple[int, ...]) -> None:
     assert check_environment.parse_version(version) == expected
 
 
+def test_utc_now_is_python_310_compatible_utc_timestamp() -> None:
+    timestamp = check_environment.utc_now()
+    assert timestamp.endswith("Z")
+    assert "+00:00" not in timestamp
+
+
 def test_evaluate_environment_accepts_valid_blackwell_snapshot() -> None:
     assert check_environment.evaluate_environment(_valid_snapshot()) == []
 

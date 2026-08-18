@@ -10,7 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -24,7 +24,8 @@ PROCESS_ROW_PATTERN = re.compile(
 
 
 def utc_now() -> str:
-    return datetime.now(UTC).isoformat().replace("+00:00", "Z")
+    # datetime.UTC does not exist in the target Python 3.10 environment.
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")  # noqa: UP017
 
 
 def parse_version(value: str) -> tuple[int, ...]:

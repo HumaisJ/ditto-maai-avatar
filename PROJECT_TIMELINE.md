@@ -140,6 +140,24 @@ it is not silently removed or marked complete.
 - **Next step:** Copy the verified correction to the GPU project and rerun on GPU 0, preserving the
   next report as `D2-GPU-ENV-0003`.
 
+### 2026-08-18 — D2 Python 3.10 validation compatibility correction
+
+- **Result:** GPU environment and PyTorch installation succeeded; CUDA validation blocked by a
+  local compatibility error.
+- **Goal/stage:** Goal 2 / Stage D2.
+- **Work:** Replaced the Python 3.11-only `datetime.UTC` usage with `timezone.utc` for the approved
+  Python 3.10 environment and made setup verify that a validator report exists before suppressing
+  its fallback failure report.
+- **Files/evidence:** GPU terminal traceback from `scripts/check_environment.py`; compatibility and
+  failure-report regression tests.
+- **Verification:** Ruff passed and all 62 tests passed, including the UTC timestamp compatibility
+  and validator-report fallback checks.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** `avatar-ditto` and PyTorch 2.8.0+cu128 are installed successfully. They
+  will be reused; no environment recreation or package redownload is required.
+- **Next step:** Copy the two corrected scripts to the GPU machine and run only the D2 validator in
+  the existing `avatar-ditto` environment.
+
 ## Entry template
 
 ### YYYY-MM-DD — Milestone name

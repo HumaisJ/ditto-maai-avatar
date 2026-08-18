@@ -118,10 +118,14 @@ try {
     if ($baseBefore -ne $baseAfter) { throw "Conda base changed during setup; stop and review." }
 
     Write-Host "Running D2 CUDA validation..."
+    $reportCountBeforeValidation = @(Get-ChildItem -LiteralPath $outputRoot -Directory -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -match '^D2-GPU-ENV-\d+$' }).Count
     $env:CUDA_VISIBLE_DEVICES = "$GpuIndex"
     conda run -n $environmentName python (Join-Path $ProjectRoot "scripts\check_environment.py") --gpu-index $GpuIndex
     if ($LASTEXITCODE -ne 0) {
-        $validationReportCreated = $true
+        $reportCountAfterValidation = @(Get-ChildItem -LiteralPath $outputRoot -Directory -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -match '^D2-GPU-ENV-\d+$' }).Count
+        $validationReportCreated = $reportCountAfterValidation -gt $reportCountBeforeValidation
         throw "D2 environment validation failed; preserve its report."
     }
 

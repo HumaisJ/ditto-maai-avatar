@@ -60,6 +60,13 @@ def test_setup_script_uses_selected_gpu_without_requiring_git() -> None:
     assert "taskkill" not in content.casefold()
 
 
+def test_setup_script_confirms_validator_report_before_skipping_fallback() -> None:
+    content = GPU_SCRIPTS[0].read_text(encoding="utf-8")
+    assert "$reportCountBeforeValidation" in content
+    assert "$reportCountAfterValidation" in content
+    assert "$validationReportCreated = $true" not in content
+
+
 @pytest.mark.skipif(shutil.which("powershell") is None, reason="PowerShell is unavailable")
 def test_failure_report_number_accepts_measure_object_double() -> None:
     content = GPU_SCRIPTS[0].read_text(encoding="utf-8")
