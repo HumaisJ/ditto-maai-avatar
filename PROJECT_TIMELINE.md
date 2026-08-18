@@ -7,9 +7,9 @@ it is not silently removed or marked complete.
 ## Current checkpoint
 
 - **Active goal:** Goal 4 — confirm Ditto on multiple controlled inputs.
-- **Current stage:** D5 complete-pair tooling prepared locally; the single GPU inference is pending.
-- **Last completed stage:** D4 — one short portrait/audio inference.
-- **Next decision:** Transfer the committed D5 tooling and run it exactly once on GPU 0.
+- **Current stage:** D6 three-pair mini-batch planning.
+- **Last completed stage:** D5 — second controlled inference with complete paired audio.
+- **Next decision:** Approve the D6 subset, batch runner, workload estimate, and stop conditions.
 - **Blocked:** No.
 
 ## Roadmap
@@ -22,8 +22,8 @@ it is not silently removed or marked complete.
 | Ditto | D2 — isolated GPU environment | Complete |
 | Ditto | D3 — install and verify Ditto/checkpoints | Complete |
 | Ditto | D4 — one short portrait/audio inference | Complete |
-| Ditto | D5 — second controlled inference | Prepared locally |
-| Ditto | D6 — three-pair mini-batch | Not started |
+| Ditto | D5 — second controlled inference | Complete |
+| Ditto | D6 — three-pair mini-batch | Planning |
 | Ditto | D7 — full 17-pair baseline | Not started |
 | Ditto | D8 — optional 289-run cross-product | Not approved |
 | Ditto | D9 — local chunked-audio streaming | Not started |
@@ -350,6 +350,31 @@ it is not silently removed or marked complete.
   clipping, package installation, batch work, or other-process modification occurred locally.
 - **Next step:** Copy the committed D5 files to the GPU project, run the wrapper exactly once, copy
   `DITTO-EXP-0002` back, and record all seven numeric visual scores before D6 planning.
+
+### 2026-08-18 — D5 complete-pair inference and visual review completed
+
+- **Result:** Complete; D5 passed its technical checks and its visual review does not block D6.
+- **Goal/stage:** Goal 4 / Stage D5.
+- **Work:** Ran exactly one complete paired-audio inference on physical GPU 0 using the Queen
+  Elizabeth portrait and P015's full Hamlet WAV, copied the complete result to the development PC,
+  and recorded all seven visual-review scores after watching the full output.
+- **Files/evidence:** `results/experiments/DITTO-EXP-0002/`, including the generated MP4, input
+  hashes, configuration, console log, 116 GPU samples, metrics, and completed review notes.
+- **Verification:** The experiment succeeded with a decodable audio stream, 1449/1449 frames at
+  25 FPS, 57.960-second output for 57.934-second input audio, 4372645-byte MP4, 117.824-second
+  inference time, 123.886-second total time, 5370 MiB peak VRAM, and no preflight compute process
+  on GPU 0. Visual scores were identity 4, lip sync 3.5, facial naturalness 3, head motion 2,
+  upper-portrait motion 3, artifact level 3.5, and overall realism 3.75.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** D5 confirms the pipeline on a second portrait and complete longer audio.
+  Lip synchronization faded near the ends of some long sentences, facial motion sometimes felt
+  stiff, and blinking needs further observation. The head-motion score is confounded by the
+  sideways source portrait, so D6 should use suitable front-facing portraits. No score is 1;
+  therefore the documented D5 stop rule does not block D6. Non-fatal ONNX shape, swscaler
+  alignment, and Clearcut telemetry warnings are preserved in the console log.
+- **Next step:** Plan a guarded three-pair D6 mini-batch using suitable portraits and short, medium,
+  and longer complete paired WAV files; do not start GPU inference until its runner and stop
+  conditions are reviewed.
 
 ## Entry template
 

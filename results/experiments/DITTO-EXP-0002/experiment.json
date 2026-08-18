@@ -1,0 +1,51 @@
+{
+  "completed_at_utc": "2026-08-18T18:26:30.961072Z",
+  "created_at_utc": "2026-08-18T18:24:23.936089Z",
+  "error": null,
+  "experiment_id": "DITTO-EXP-0002",
+  "git_commit": null,
+  "inputs": {
+    "inference_audio": {
+      "duration_sec": 57.933786848072565,
+      "path": "assets/audio/zia_mohyeddin_hamlet_act_2_scene_2.wav",
+      "sha256": "dc0f9eb0fd825f80ec81341149edbf839f4023a41a8a3305e99d8a4e7ba01b89",
+      "size_bytes": 10219598
+    },
+    "original_audio": {
+      "duration_sec": 57.933786848072565,
+      "path": "assets/audio/zia_mohyeddin_hamlet_act_2_scene_2.wav",
+      "sha256": "dc0f9eb0fd825f80ec81341149edbf839f4023a41a8a3305e99d8a4e7ba01b89",
+      "size_bytes": 10219598
+    },
+    "portrait": {
+      "duration_sec": null,
+      "path": "assets/portraits/queen_elizabeth.jpeg",
+      "sha256": "c5875bdfa0e6033c17d28a033e7b17cfa744ac0b8e7e6a1c72f3ebea4e7147fb",
+      "size_bytes": 53418
+    }
+  },
+  "model": {
+    "backend": "pytorch",
+    "checkpoint_revision": "e4a2f60328ee7c32af585ac4b3cce299e4c8e254",
+    "name": "ditto-talkinghead",
+    "pipeline": "stream_pipeline_offline.StreamSDK",
+    "source_revision": "c3e47eee2e626500017a0556b470d6d4182f85e8"
+  },
+  "purpose": "D5: another portrait and one complete longer audio produce one valid video.",
+  "requested_output_path": "results/experiments/DITTO-EXP-0002/generated.mp4",
+  "started_at_utc": "2026-08-18T18:24:23.936089Z",
+  "status": "succeeded",
+  "system": {
+    "cuda_visible_to_pytorch": "12.8",
+    "git_commit": null,
+    "gpu": {
+      "driver_version": "591.86",
+      "memory_total_mb": 16311.0,
+      "name": "NVIDIA GeForce RTX 5060 Ti"
+    },
+    "operating_system": "Windows-10-10.0.26200-SP0",
+    "python_executable": "D:\\Data of all Students\\Humaisa\\conda-envs\\avatar-ditto\\python.exe",
+    "python_version": "3.10.20",
+    "pytorch_version": "2.8.0+cu128"
+  }
+}
