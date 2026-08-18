@@ -1,4 +1,4 @@
-"""Run the single approved D4 offline Ditto inference."""
+"""Run one approved controlled offline Ditto inference for D4 or D5."""
 
 from __future__ import annotations
 
@@ -52,49 +52,136 @@ class _Tee:
             stream.flush()
 
 
-def ensure_first_ditto_experiment(results_root: Path) -> None:
-    """Refuse to create a second D4 attempt, including after a retained failure."""
-    if results_root.is_dir() and any(results_root.glob("DITTO-EXP-*")):
+STAGE_PURPOSES = {
+    "D4": "D4: one portrait and one short audio produce one valid video.",
+    "D5": "D5: another portrait and one complete longer audio produce one valid video.",
+}
+
+
+def _read_experiment_status(directory: Path) -> str | None:
+    try:
+        import json
+
+        payload = json.loads((directory / "experiment.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if payload.get("experiment_id") != directory.name:
+        return None
+    status = payload.get("status")
+    return status if isinstance(status, str) else None
+
+
+def ensure_experiment_sequence(results_root: Path, stage: str) -> None:
+    """Enforce one retained attempt per controlled Ditto stage."""
+    existing = {
+        path.name: path
+        for path in results_root.glob("DITTO-EXP-*")
+        if path.is_dir() and path.name.removeprefix("DITTO-EXP-").isdigit()
+    } if results_root.is_dir() else {}
+    if stage == "D4":
+        if existing:
+            raise RuntimeError(
+                "A DITTO experiment already exists. Preserve and review it before any further run."
+            )
+        return
+    if stage != "D5":
+        raise ValueError(f"unsupported controlled Ditto stage: {stage}")
+
+    if set(existing) != {"DITTO-EXP-0001"}:
         raise RuntimeError(
-            "A DITTO experiment already exists. Preserve and review it before any further run."
+            "D5 requires exactly one prior DITTO-EXP-0001 result and no later attempt."
         )
+    if _read_experiment_status(existing["DITTO-EXP-0001"]) != "succeeded":
+        raise RuntimeError("D5 requires a successful DITTO-EXP-0001 result.")
 
 
-def _validate_d4_config(config: dict[str, Any]) -> dict[str, Any]:
-    d4 = config.get("d4")
-    if not isinstance(d4, dict):
-        raise ValueError("config/ditto.yaml is missing the D4 configuration")
-    expected = {
-        "pair_id": "P007",
-        "clip_start_sec": 0.0,
-        "clip_duration_sec": 5.0,
-        "seed": 1024,
-        "fps": 25,
-        "pipeline": "offline",
-        "gpu_sample_interval_sec": 1.0,
-        "output_filename": "generated.mp4",
+def _validate_stage_config(config: dict[str, Any], stage: str) -> dict[str, Any]:
+    expected_by_stage = {
+        "D4": {
+            "experiment_id": "DITTO-EXP-0001",
+            "pair_id": "P007",
+            "audio_mode": "excerpt",
+            "clip_start_sec": 0.0,
+            "clip_duration_sec": 5.0,
+            "derived_filename": "P007_first_5_seconds.wav",
+            "seed": 1024,
+            "fps": 25,
+            "pipeline": "offline",
+            "gpu_sample_interval_sec": 1.0,
+            "output_filename": "generated.mp4",
+        },
+        "D5": {
+            "experiment_id": "DITTO-EXP-0002",
+            "pair_id": "P015",
+            "audio_mode": "full",
+            "seed": 1024,
+            "fps": 25,
+            "pipeline": "offline",
+            "gpu_sample_interval_sec": 1.0,
+            "output_filename": "generated.mp4",
+        },
     }
+    expected = expected_by_stage.get(stage)
+    if expected is None:
+        raise ValueError(f"unsupported controlled Ditto stage: {stage}")
+    stage_config = config.get(stage.casefold())
+    if not isinstance(stage_config, dict):
+        raise ValueError(f"config/ditto.yaml is missing the {stage} configuration")
     for key, expected_value in expected.items():
-        if d4.get(key) != expected_value:
-            raise ValueError(f"D4 {key} must be {expected_value!r}, got {d4.get(key)!r}")
-    return d4
+        if stage_config.get(key) != expected_value:
+            raise ValueError(
+                f"{stage} {key} must be {expected_value!r}, got {stage_config.get(key)!r}"
+            )
+    return stage_config
 
 
-def _append_visual_review_template(path: Path) -> None:
+def _prepare_inference_audio(
+    *,
+    original_audio: Path,
+    runtime_root: Path,
+    stage: str,
+    stage_config: dict[str, Any],
+) -> tuple[Path, dict[str, Any]]:
+    mode = stage_config["audio_mode"]
+    if mode == "full":
+        return original_audio, {"mode": "full", "source_unchanged": True}
+    if mode != "excerpt":
+        raise ValueError(f"unsupported {stage} audio mode: {mode}")
+    derived_audio = runtime_root / "d4-inputs" / stage_config["derived_filename"]
+    clip = create_wav_excerpt(
+        original_audio,
+        derived_audio,
+        start_sec=float(stage_config["clip_start_sec"]),
+        duration_sec=float(stage_config["clip_duration_sec"]),
+    )
+    return derived_audio, {"mode": "excerpt", **clip}
+
+
+def _append_visual_review_template(path: Path, stage: str = "D4") -> None:
+    if stage == "D5":
+        instruction = (
+            "Use 1 = unacceptable, 2 = poor, 3 = usable, 4 = good, and 5 = excellent. "
+            "Complete every field after watching the full video."
+        )
+        stop_message = "Any score of 1 blocks D6 until the D5 result is diagnosed."
+    else:
+        instruction = "Use 1 = unacceptable, 2 = poor, 3 = usable, 4 = good, 5 = excellent, or N/A."
+        stop_message = "Any score of 1 blocks D5 until the D4 result is diagnosed."
     lines = [
-        "## D4 visual review",
+        f"## {stage} visual review",
         "",
-        "Use 1 = unacceptable, 2 = poor, 3 = usable, 4 = good, 5 = excellent, or N/A.",
+        instruction,
         "",
     ]
     lines.extend(f"- {field}: pending" for field in VISUAL_FIELDS)
-    lines.extend(["", "Any score of 1 blocks D5 until the D4 result is diagnosed.", ""])
+    lines.extend(["", stop_message, ""])
     with path.open("a", encoding="utf-8", newline="\n") as handle:
         handle.write("\n".join(lines))
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--stage", choices=("D4", "D5"), default="D4")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--runtime-root", type=Path, default=DEFAULT_RUNTIME)
@@ -105,26 +192,28 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    stage = args.stage
     config = load_config(args.config.resolve())
-    d4 = _validate_d4_config(config)
+    stage_config = _validate_stage_config(config, stage)
     results_root = args.results_root.resolve()
-    ensure_first_ditto_experiment(results_root)
+    ensure_experiment_sequence(results_root, stage)
 
     entries = load_manifest(args.manifest.resolve())
     validate_manifest(entries, PROJECT_ROOT, expected_count=17)
-    selected = next((entry for entry in entries if entry.pair_id == d4["pair_id"]), None)
+    selected = next(
+        (entry for entry in entries if entry.pair_id == stage_config["pair_id"]), None
+    )
     if selected is None:
-        raise RuntimeError(f"manifest does not contain D4 pair {d4['pair_id']}")
+        raise RuntimeError(f"manifest does not contain {stage} pair {stage_config['pair_id']}")
 
     portrait = (PROJECT_ROOT / selected.portrait_path).resolve()
     original_audio = (PROJECT_ROOT / selected.audio_path).resolve()
     runtime_root = args.runtime_root.resolve()
-    derived_audio = runtime_root / "d4-inputs" / "P007_first_5_seconds.wav"
-    clip = create_wav_excerpt(
-        original_audio,
-        derived_audio,
-        start_sec=float(d4["clip_start_sec"]),
-        duration_sec=float(d4["clip_duration_sec"]),
+    inference_audio, audio_preparation = _prepare_inference_audio(
+        original_audio=original_audio,
+        runtime_root=runtime_root,
+        stage=stage,
+        stage_config=stage_config,
     )
 
     source_dir = runtime_root / config["runtime"]["source_dir"]
@@ -132,25 +221,25 @@ def main(argv: list[str] | None = None) -> int:
     source_manifest = runtime_root / "source-manifest.json"
     checkpoint_manifest = runtime_root / "checkpoint-manifest.json"
     run_config = {
-        "stage": "D4",
+        "stage": stage,
         "pair_id": selected.pair_id,
         "portrait_path": selected.portrait_path,
         "original_audio_path": selected.audio_path,
-        "derived_audio_path": str(derived_audio.relative_to(PROJECT_ROOT)).replace("\\", "/"),
-        "clip": clip,
-        "inference": d4,
+        "inference_audio_path": str(inference_audio.relative_to(PROJECT_ROOT)).replace("\\", "/"),
+        "audio_preparation": audio_preparation,
+        "inference": stage_config,
         "ditto": config,
     }
     run = ExperimentRun.create(
         project_root=PROJECT_ROOT,
         results_root=results_root,
         kind="DITTO",
-        purpose="D4: one portrait and one short audio produce one valid video.",
+        purpose=STAGE_PURPOSES[stage],
         config=run_config,
         inputs={
             "portrait": portrait,
             "original_audio": original_audio,
-            "inference_audio": derived_audio,
+            "inference_audio": inference_audio,
         },
         model={
             "name": "ditto-talkinghead",
@@ -160,9 +249,14 @@ def main(argv: list[str] | None = None) -> int:
             "pipeline": "stream_pipeline_offline.StreamSDK",
         },
     )
-    output = run.directory / d4["output_filename"]
+    if run.experiment_id != stage_config["experiment_id"]:
+        with run:
+            raise RuntimeError(
+                f"{stage} allocated {run.experiment_id}; expected {stage_config['experiment_id']}"
+            )
+    output = run.directory / stage_config["output_filename"]
     run.set_output_path(output)
-    _append_visual_review_template(run.directory / "notes.md")
+    _append_visual_review_template(run.directory / "notes.md", stage)
 
     try:
         with run:
@@ -176,13 +270,13 @@ def main(argv: list[str] | None = None) -> int:
             )
             errors = environment_errors + runtime_errors
             if errors:
-                raise RuntimeError("D4 preflight failed: " + "; ".join(errors))
-            run.logger.info("D4 environment and pinned runtime preflight passed")
+                raise RuntimeError(f"{stage} preflight failed: " + "; ".join(errors))
+            run.logger.info("%s environment and pinned runtime preflight passed", stage)
 
             sampler = GpuSampler(
                 run.directory / "gpu.csv",
                 gpu_index=args.gpu_index,
-                interval_sec=float(d4["gpu_sample_interval_sec"]),
+                interval_sec=float(stage_config["gpu_sample_interval_sec"]),
             )
             try:
                 with sampler:
@@ -198,10 +292,10 @@ def main(argv: list[str] | None = None) -> int:
                                 config_file=config["checkpoints"]["config_file"],
                                 data_root=config["checkpoints"]["data_root"],
                                 portrait_path=portrait,
-                                audio_path=derived_audio,
+                                audio_path=inference_audio,
                                 output_path=output,
-                                seed=int(d4["seed"]),
-                                expected_fps=int(d4["fps"]),
+                                seed=int(stage_config["seed"]),
+                                expected_fps=int(stage_config["fps"]),
                             )
             finally:
                 run.record_metrics(sampler.summary())
@@ -216,15 +310,19 @@ def main(argv: list[str] | None = None) -> int:
             metrics["environment_preflight"] = environment
             metrics["runtime_preflight"] = runtime
             run.record_metrics(metrics)
-            run.logger.info("D4 generated and validated %s", output)
+            run.logger.info("%s generated and validated %s", stage, output)
     except Exception as exc:
-        print(f"D4 experiment failed: {run.experiment_id}: {exc}", file=sys.stderr)
+        print(f"{stage} experiment failed: {run.experiment_id}: {exc}", file=sys.stderr)
         print(f"Preserved results: {run.directory}", file=sys.stderr)
         return 1
 
-    print(f"D4 experiment completed: {run.experiment_id}")
+    print(f"{stage} experiment completed: {run.experiment_id}")
     print(f"Results: {run.directory}")
-    print("Stop here. Copy this directory to the PC and complete the visual review before D5.")
+    next_stage = "D5" if stage == "D4" else "D6"
+    print(
+        "Stop here. Copy this directory to the PC and complete the visual review "
+        f"before {next_stage}."
+    )
     return 0
 
 

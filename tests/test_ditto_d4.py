@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import json
 import wave
 from pathlib import Path
 from types import SimpleNamespace
@@ -12,6 +13,7 @@ from scripts import test_ditto_file
 from src.avatar import ditto_adapter
 from src.utils import system_info
 from src.utils.audio import create_wav_excerpt
+from src.utils.manifest import load_manifest
 
 
 def _write_test_wav(path: Path, *, frame_count: int = 100, sample_rate: int = 20) -> bytes:
@@ -67,8 +69,9 @@ def test_wav_excerpt_rejects_invalid_windows(
 
 def test_d4_configuration_is_fixed_to_one_short_p007_run() -> None:
     config = test_ditto_file.load_config(test_ditto_file.DEFAULT_CONFIG)
-    d4 = test_ditto_file._validate_d4_config(config)
+    d4 = test_ditto_file._validate_stage_config(config, "D4")
     assert d4["pair_id"] == "P007"
+    assert d4["audio_mode"] == "excerpt"
     assert d4["clip_start_sec"] == 0.0
     assert d4["clip_duration_sec"] == 5.0
     assert d4["pipeline"] == "offline"
@@ -76,10 +79,68 @@ def test_d4_configuration_is_fixed_to_one_short_p007_run() -> None:
 
 
 def test_d4_refuses_a_second_or_failed_retained_attempt(tmp_path: Path) -> None:
-    test_ditto_file.ensure_first_ditto_experiment(tmp_path)
+    test_ditto_file.ensure_experiment_sequence(tmp_path, "D4")
     (tmp_path / "DITTO-EXP-0001").mkdir()
     with pytest.raises(RuntimeError, match="already exists"):
-        test_ditto_file.ensure_first_ditto_experiment(tmp_path)
+        test_ditto_file.ensure_experiment_sequence(tmp_path, "D4")
+
+
+def test_d5_configuration_uses_the_complete_p015_pair(monkeypatch, tmp_path: Path) -> None:
+    config = test_ditto_file.load_config(test_ditto_file.DEFAULT_CONFIG)
+    d5 = test_ditto_file._validate_stage_config(config, "D5")
+    entries = load_manifest(test_ditto_file.DEFAULT_MANIFEST)
+    selected = next(entry for entry in entries if entry.pair_id == d5["pair_id"])
+    assert selected.portrait_path == "assets/portraits/queen_elizabeth.jpeg"
+    assert selected.audio_path == "assets/audio/zia_mohyeddin_hamlet_act_2_scene_2.wav"
+    assert selected.audio_duration_sec == pytest.approx(57.934)
+    assert d5["audio_mode"] == "full"
+    assert d5["experiment_id"] == "DITTO-EXP-0002"
+
+    monkeypatch.setattr(
+        test_ditto_file,
+        "create_wav_excerpt",
+        lambda *args, **kwargs: pytest.fail("D5 must not create an audio excerpt"),
+    )
+    original = tmp_path / "complete.wav"
+    inference, details = test_ditto_file._prepare_inference_audio(
+        original_audio=original,
+        runtime_root=tmp_path / "runtime",
+        stage="D5",
+        stage_config=d5,
+    )
+    assert inference == original
+    assert details == {"mode": "full", "source_unchanged": True}
+
+
+def test_d5_requires_one_successful_d4_and_refuses_a_second_attempt(tmp_path: Path) -> None:
+    with pytest.raises(RuntimeError, match="exactly one prior"):
+        test_ditto_file.ensure_experiment_sequence(tmp_path, "D5")
+
+    d4 = tmp_path / "DITTO-EXP-0001"
+    d4.mkdir()
+    (d4 / "experiment.json").write_text(
+        json.dumps({"experiment_id": "DITTO-EXP-0001", "status": "failed"}),
+        encoding="utf-8",
+    )
+    with pytest.raises(RuntimeError, match="successful"):
+        test_ditto_file.ensure_experiment_sequence(tmp_path, "D5")
+
+    (d4 / "experiment.json").write_text(
+        json.dumps({"experiment_id": "DITTO-EXP-9999", "status": "succeeded"}),
+        encoding="utf-8",
+    )
+    with pytest.raises(RuntimeError, match="successful"):
+        test_ditto_file.ensure_experiment_sequence(tmp_path, "D5")
+
+    (d4 / "experiment.json").write_text(
+        json.dumps({"experiment_id": "DITTO-EXP-0001", "status": "succeeded"}),
+        encoding="utf-8",
+    )
+    test_ditto_file.ensure_experiment_sequence(tmp_path, "D5")
+
+    (tmp_path / "DITTO-EXP-0002").mkdir()
+    with pytest.raises(RuntimeError, match="exactly one prior"):
+        test_ditto_file.ensure_experiment_sequence(tmp_path, "D5")
 
 
 def test_gpu_sampler_records_baseline_peak_and_final_sample(tmp_path: Path, monkeypatch) -> None:
@@ -173,6 +234,18 @@ def test_d4_visual_template_contains_the_complete_guide_rubric(tmp_path: Path) -
     notes.write_text("# experiment\n", encoding="utf-8")
     test_ditto_file._append_visual_review_template(notes)
     content = notes.read_text(encoding="utf-8")
+    for field in test_ditto_file.VISUAL_FIELDS:
+        assert f"- {field}: pending" in content
+
+
+def test_d5_visual_template_requires_complete_numeric_review(tmp_path: Path) -> None:
+    notes = tmp_path / "notes.md"
+    notes.write_text("# experiment\n", encoding="utf-8")
+    test_ditto_file._append_visual_review_template(notes, "D5")
+    content = notes.read_text(encoding="utf-8")
+    assert "## D5 visual review" in content
+    assert "Complete every field" in content
+    assert "blocks D6" in content
     for field in test_ditto_file.VISUAL_FIELDS:
         assert f"- {field}: pending" in content
 

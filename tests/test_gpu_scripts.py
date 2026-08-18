@@ -13,6 +13,7 @@ GPU_SCRIPTS = (
     PROJECT_ROOT / "scripts" / "gpu" / "prepare_ditto_source.ps1",
     PROJECT_ROOT / "scripts" / "gpu" / "install_ditto.ps1",
     PROJECT_ROOT / "scripts" / "gpu" / "run_ditto_d4.ps1",
+    PROJECT_ROOT / "scripts" / "gpu" / "run_ditto_d5.ps1",
 )
 
 
@@ -158,6 +159,24 @@ def test_d4_wrapper_is_single_run_and_never_changes_other_processes() -> None:
     assert "^ditto-exp-\\d+$" in folded
     assert "another compute-only process" in folded
     assert "minimum_free_vram_mb" not in folded
+    assert "12000" in content
+    assert '$env:CUDA_VISIBLE_DEVICES = "$GpuIndex"' in content
+    assert "conda run --no-capture-output -n $environmentname" in folded
+    assert "stop-process" not in folded
+    assert "taskkill" not in folded
+    assert "conda env create" not in folded
+    assert "pip install" not in folded
+
+
+def test_d5_wrapper_requires_d4_and_never_changes_other_processes() -> None:
+    content = GPU_SCRIPTS[5].read_text(encoding="utf-8")
+    folded = content.casefold()
+    assert "d5 is approved only for physical gpu 0" in folded
+    assert 'join-path $resultsroot "ditto-exp-0001"' in folded
+    assert 'join-path $resultsroot "ditto-exp-0002"' in folded
+    assert "$d4report.status -ne \"succeeded\"" in folded
+    assert "--stage d5" in folded
+    assert "another compute-only process" in folded
     assert "12000" in content
     assert '$env:CUDA_VISIBLE_DEVICES = "$GpuIndex"' in content
     assert "conda run --no-capture-output -n $environmentname" in folded

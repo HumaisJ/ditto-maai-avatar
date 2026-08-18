@@ -44,9 +44,22 @@ safety:
   maximum_utilization_percent: 20
 
 d4:
+  experiment_id: DITTO-EXP-0001
   pair_id: P007
+  audio_mode: excerpt
   clip_start_sec: 0.0
   clip_duration_sec: 5.0
+  derived_filename: P007_first_5_seconds.wav
+  seed: 1024
+  fps: 25
+  pipeline: offline
+  gpu_sample_interval_sec: 1.0
+  output_filename: generated.mp4
+
+d5:
+  experiment_id: DITTO-EXP-0002
+  pair_id: P015
+  audio_mode: full
   seed: 1024
   fps: 25
   pipeline: offline

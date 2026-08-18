@@ -7,9 +7,9 @@ it is not silently removed or marked complete.
 ## Current checkpoint
 
 - **Active goal:** Goal 4 — confirm Ditto on multiple controlled inputs.
-- **Current stage:** D4 technical smoke test complete; D5 awaits planning.
+- **Current stage:** D5 complete-pair tooling prepared locally; the single GPU inference is pending.
 - **Last completed stage:** D4 — one short portrait/audio inference.
-- **Next decision:** Plan D5 using another portrait and one complete, longer paired WAV.
+- **Next decision:** Transfer the committed D5 tooling and run it exactly once on GPU 0.
 - **Blocked:** No.
 
 ## Roadmap
@@ -22,7 +22,7 @@ it is not silently removed or marked complete.
 | Ditto | D2 — isolated GPU environment | Complete |
 | Ditto | D3 — install and verify Ditto/checkpoints | Complete |
 | Ditto | D4 — one short portrait/audio inference | Complete |
-| Ditto | D5 — second controlled inference | Not started |
+| Ditto | D5 — second controlled inference | Prepared locally |
 | Ditto | D6 — three-pair mini-batch | Not started |
 | Ditto | D7 — full 17-pair baseline | Not started |
 | Ditto | D8 — optional 289-run cross-product | Not approved |
@@ -332,6 +332,24 @@ it is not silently removed or marked complete.
   warnings remain preserved in the console evidence.
 - **Next step:** Plan D5 with a different portrait and a complete, longer paired WAV; do not start
   that inference until its input, workload estimate, command, and stop conditions are approved.
+
+### 2026-08-18 — D5 complete-pair inference tooling prepared
+
+- **Result:** Complete locally; the one D5 GPU inference is pending.
+- **Goal/stage:** Goal 4 / Stage D5.
+- **Work:** Generalized the controlled runner without changing D4 behavior, fixed D5 to complete
+  pair P015, added D4-to-D5 sequencing, a numeric visual-review contract, and a one-run GPU wrapper.
+- **Files/evidence:** D5 configuration and runner, `scripts/gpu/run_ditto_d5.ps1`, regression tests,
+  and the Windows GPU runbook.
+- **Verification:** Ruff passed and all 96 local tests passed, including full-audio passthrough,
+  successful-D4 requirements, retained-attempt blocking, D4 regression coverage, and PowerShell
+  parsing; all 17 manifest pairs remained valid.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** D5 uses the original 57.934-second Hamlet WAV and Queen Elizabeth portrait
+  on physical GPU 0. Estimated execution is 5–6 minutes and roughly 6 MB output. No inference,
+  clipping, package installation, batch work, or other-process modification occurred locally.
+- **Next step:** Copy the committed D5 files to the GPU project, run the wrapper exactly once, copy
+  `DITTO-EXP-0002` back, and record all seven numeric visual scores before D6 planning.
 
 ## Entry template
 

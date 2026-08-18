@@ -139,3 +139,39 @@ Whether the command succeeds or fails, do not run it again. Copy the entire `DIT
 directory back to the development PC, including `generated.mp4` when present. Complete the seven
 pending visual-review scores in `notes.md` before planning D5. The original 28.967-second WAV is
 not modified and remains reserved for later complete-audio testing.
+
+## D5: run one complete paired-audio inference
+
+D5 reuses the same environment and runtime and runs only complete manifest pair P015: the Queen
+Elizabeth portrait with the 57.934-second Hamlet WAV. Based on D4, allow approximately 5–6 minutes
+and about 6 MB for the generated video. No package installation or audio clipping occurs.
+
+Copy the committed D5 project files from the development PC over the GPU project copy while
+preserving `.runtime/`, `.transfer/`, and `results/`. Restore the session-scoped Conda variables
+shown in D3. Then confirm the successful D4 result remains and D5 does not exist:
+
+```powershell
+(Get-Content .\results\experiments\DITTO-EXP-0001\experiment.json -Raw |
+    ConvertFrom-Json) | Select-Object experiment_id,status
+
+Test-Path .\results\experiments\DITTO-EXP-0002
+```
+
+The first command must report `DITTO-EXP-0001` and `succeeded`; the second must report `False`.
+Check GPU availability without changing any process:
+
+```powershell
+nvidia-smi --query-gpu=index,name,memory.used,memory.free,memory.total,utilization.gpu --format=csv
+```
+
+When physical GPU 0 has at least 12000 MiB free and at most 20% utilization, run D5 exactly once:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+    -File .\scripts\gpu\run_ditto_d5.ps1 `
+    -GpuIndex 0
+```
+
+Whether it succeeds or fails, do not rerun it. Copy the entire `DITTO-EXP-0002` directory back to
+the development PC. Watch the complete video with sound and enter a numeric 1–5 score for every
+visual-review field in `notes.md`. Any score of 1 stops progression before D6.
