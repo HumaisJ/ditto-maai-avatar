@@ -1,0 +1,82 @@
+{
+  "clip": {
+    "channels": 2,
+    "duration_sec": 5.0,
+    "frame_count": 240000,
+    "sample_rate_hz": 48000,
+    "sample_width_bytes": 2,
+    "start_frame": 0
+  },
+  "derived_audio_path": ".runtime/ditto/d4-inputs/P007_first_5_seconds.wav",
+  "ditto": {
+    "backend": "pytorch",
+    "checkpoints": {
+      "config_file": "ditto_cfg/v0.4_hubert_cfg_pytorch.pkl",
+      "data_root": "ditto_pytorch",
+      "repository": "digital-avatar/ditto-talkinghead",
+      "required_files": [
+        "ditto_cfg/v0.4_hubert_cfg_pytorch.pkl",
+        "ditto_pytorch/aux_models/2d106det.onnx",
+        "ditto_pytorch/aux_models/det_10g.onnx",
+        "ditto_pytorch/aux_models/face_landmarker.task",
+        "ditto_pytorch/aux_models/hubert_streaming_fix_kv.onnx",
+        "ditto_pytorch/aux_models/landmark203.onnx",
+        "ditto_pytorch/models/appearance_extractor.pth",
+        "ditto_pytorch/models/decoder.pth",
+        "ditto_pytorch/models/lmdm_v0.4_hubert.pth",
+        "ditto_pytorch/models/motion_extractor.pth",
+        "ditto_pytorch/models/stitch_network.pth",
+        "ditto_pytorch/models/warp_network.pth"
+      ],
+      "revision": "e4a2f60328ee7c32af585ac4b3cce299e4c8e254"
+    },
+    "d4": {
+      "clip_duration_sec": 5.0,
+      "clip_start_sec": 0.0,
+      "fps": 25,
+      "gpu_sample_interval_sec": 1.0,
+      "output_filename": "generated.mp4",
+      "pair_id": "P007",
+      "pipeline": "offline",
+      "seed": 1024
+    },
+    "environment": {
+      "einops": "0.8.1",
+      "mediapipe": "0.10.35",
+      "name": "avatar-ditto",
+      "onnxruntime_gpu": "1.23.2",
+      "torch": "2.8.0+cu128",
+      "torchaudio": "2.8.0+cu128",
+      "torchvision": "0.23.0+cu128"
+    },
+    "runtime": {
+      "cache_dir": "cache",
+      "checkpoint_dir": "checkpoints",
+      "root": ".runtime/ditto",
+      "source_dir": "source"
+    },
+    "safety": {
+      "expected_gpu": "RTX 5060 Ti",
+      "maximum_utilization_percent": 20,
+      "minimum_free_vram_mb": 12000
+    },
+    "source": {
+      "repository": "https://github.com/antgroup/ditto-talkinghead.git",
+      "revision": "c3e47eee2e626500017a0556b470d6d4182f85e8"
+    }
+  },
+  "inference": {
+    "clip_duration_sec": 5.0,
+    "clip_start_sec": 0.0,
+    "fps": 25,
+    "gpu_sample_interval_sec": 1.0,
+    "output_filename": "generated.mp4",
+    "pair_id": "P007",
+    "pipeline": "offline",
+    "seed": 1024
+  },
+  "original_audio_path": "assets/audio/itachi_speech_on_reality.wav",
+  "pair_id": "P007",
+  "portrait_path": "assets/portraits/hayao_miyazaki.jpg",
+  "stage": "D4"
+}

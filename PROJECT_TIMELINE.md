@@ -6,10 +6,10 @@ it is not silently removed or marked complete.
 
 ## Current checkpoint
 
-- **Active goal:** Goal 3 — produce one saved Ditto portrait/audio video.
-- **Current stage:** D4 tooling prepared locally; the single GPU inference is pending.
-- **Last completed stage:** D3 — install and verify Ditto/checkpoints.
-- **Next decision:** Transfer the committed D4 tooling and run it exactly once on GPU 0.
+- **Active goal:** Goal 4 — confirm Ditto on multiple controlled inputs.
+- **Current stage:** D4 technical smoke test complete; D5 awaits planning.
+- **Last completed stage:** D4 — one short portrait/audio inference.
+- **Next decision:** Plan D5 using another portrait and one complete, longer paired WAV.
 - **Blocked:** No.
 
 ## Roadmap
@@ -21,7 +21,7 @@ it is not silently removed or marked complete.
 | Ditto | D1 — local experiment infrastructure | Complete |
 | Ditto | D2 — isolated GPU environment | Complete |
 | Ditto | D3 — install and verify Ditto/checkpoints | Complete |
-| Ditto | D4 — one short portrait/audio inference | Prepared locally |
+| Ditto | D4 — one short portrait/audio inference | Complete |
 | Ditto | D5 — second controlled inference | Not started |
 | Ditto | D6 — three-pair mini-batch | Not started |
 | Ditto | D7 — full 17-pair baseline | Not started |
@@ -313,6 +313,25 @@ it is not silently removed or marked complete.
   modification occurred while preparing the tooling.
 - **Next step:** Copy the committed files to the GPU project, run the D4 wrapper exactly once, copy
   `DITTO-EXP-0001` back, and complete its visual review before any D5 work.
+
+### 2026-08-18 — D4 single Ditto smoke test completed
+
+- **Result:** Complete as a technical smoke test.
+- **Goal/stage:** Goal 3 / Stage D4.
+- **Work:** Ran exactly one offline PyTorch Ditto inference on physical GPU 0 using the Hayao
+  Miyazaki portrait and a deterministic first-five-second excerpt of P007's paired WAV.
+- **Files/evidence:** `results/experiments/DITTO-EXP-0001/`, including the generated MP4, input
+  hashes, configuration, console log, 57 GPU samples, metrics, and review notes.
+- **Verification:** The experiment succeeded with a validated audio stream, 125 decoded frames at
+  25 FPS, 5.000-second output, 503308-byte MP4, 43.626-second inference time, 59.327-second total
+  time, 5438 MiB peak VRAM, and no preflight compute process on GPU 0.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** The D4 pipeline goal is met. The five-second clip is too short for a
+  defensible subjective-quality score, so all seven visual fields are recorded as N/A and must be
+  evaluated during D5 using a complete paired audio file. The non-fatal ONNX shape and swscaler
+  warnings remain preserved in the console evidence.
+- **Next step:** Plan D5 with a different portrait and a complete, longer paired WAV; do not start
+  that inference until its input, workload estimate, command, and stop conditions are approved.
 
 ## Entry template
 

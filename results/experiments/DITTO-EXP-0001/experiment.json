@@ -1,0 +1,51 @@
+{
+  "completed_at_utc": "2026-08-18T17:40:26.922193Z",
+  "created_at_utc": "2026-08-18T17:39:23.868138Z",
+  "error": null,
+  "experiment_id": "DITTO-EXP-0001",
+  "git_commit": null,
+  "inputs": {
+    "inference_audio": {
+      "duration_sec": 5.0,
+      "path": ".runtime/ditto/d4-inputs/P007_first_5_seconds.wav",
+      "sha256": "251db68ad2b35698ee91aee3481206d8788c277ed7224862d2f83122b690ff5c",
+      "size_bytes": 960044
+    },
+    "original_audio": {
+      "duration_sec": 28.966895833333332,
+      "path": "assets/audio/itachi_speech_on_reality.wav",
+      "sha256": "1f7dc9da4bd6a51cbac113b52b2969aa1b6e97af04f0184ad4c21455857078d8",
+      "size_bytes": 5561722
+    },
+    "portrait": {
+      "duration_sec": null,
+      "path": "assets/portraits/hayao_miyazaki.jpg",
+      "sha256": "10a6e491b85ac3edb7b049f0de7a14ccc72b85753141993f5cae9e05cce80e9d",
+      "size_bytes": 77465
+    }
+  },
+  "model": {
+    "backend": "pytorch",
+    "checkpoint_revision": "e4a2f60328ee7c32af585ac4b3cce299e4c8e254",
+    "name": "ditto-talkinghead",
+    "pipeline": "stream_pipeline_offline.StreamSDK",
+    "source_revision": "c3e47eee2e626500017a0556b470d6d4182f85e8"
+  },
+  "purpose": "D4: one portrait and one short audio produce one valid video.",
+  "requested_output_path": "results/experiments/DITTO-EXP-0001/generated.mp4",
+  "started_at_utc": "2026-08-18T17:39:23.868138Z",
+  "status": "succeeded",
+  "system": {
+    "cuda_visible_to_pytorch": "12.8",
+    "git_commit": null,
+    "gpu": {
+      "driver_version": "591.86",
+      "memory_total_mb": 16311.0,
+      "name": "NVIDIA GeForce RTX 5060 Ti"
+    },
+    "operating_system": "Windows-10-10.0.26200-SP0",
+    "python_executable": "D:\\Data of all Students\\Humaisa\\conda-envs\\avatar-ditto\\python.exe",
+    "python_version": "3.10.20",
+    "pytorch_version": "2.8.0+cu128"
+  }
+}
