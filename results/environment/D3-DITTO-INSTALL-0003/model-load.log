@@ -1,0 +1,75 @@
+Traceback (most recent call last):
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\pyximport\_pyximport3.py", line 314, in create_module
+    so_path = build_module(spec.name, pyxfilename=spec.origin, pyxbuild_dir=self._pyxbuild_dir,
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\pyximport\_pyximport3.py", line 197, in build_module
+    so_path = pyxbuild.pyx_to_dll(pyxfilename, extension_mod,
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\pyximport\pyxbuild.py", line 103, in pyx_to_dll
+    dist.run_commands()
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\dist.py", line 1028, in run_commands
+    self.run_command(cmd)
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\dist.py", line 1106, in run_command
+    super().run_command(command)
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\dist.py", line 1047, in run_command
+    cmd_obj.run()
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\command\build_ext.py", line 382, in run
+    self.build_extensions()
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\command\build_ext.py", line 498, in build_extensions
+    self._build_extensions_serial()
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\command\build_ext.py", line 524, in _build_extensions_serial
+    self.build_extension(ext)
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\Cython\Distutils\build_ext.py", line 135, in build_extension
+    super(build_ext, self).build_extension(ext)
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\command\build_ext.py", line 585, in build_extension
+    objects = self.compiler.compile(
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\compilers\C\msvc.py", line 444, in compile
+    self.initialize()
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\compilers\C\msvc.py", line 354, in initialize
+    vc_env = _get_vc_env(plat_spec)
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\compilers\C\msvc.py", line 152, in _get_vc_env
+    raise PlatformError(
+distutils.compilers.errors.PlatformError: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\scripts\check_ditto_install.py", line 292, in main
+    report["model_load"], model_log = load_ditto_models(
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\scripts\check_ditto_install.py", line 195, in load_ditto_models
+    from stream_pipeline_online import StreamSDK
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\stream_pipeline_online.py", line 13, in <module>
+    from core.atomic_components.putback import PutBack
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\atomic_components\putback.py", line 3, in <module>
+    from ..utils.blend import blend_images_cy
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\utils\blend\__init__.py", line 4, in <module>
+    from .blend import blend_images_cy
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\pyximport\_pyximport3.py", line 332, in create_module
+    raise exc.with_traceback(tb)
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\pyximport\_pyximport3.py", line 314, in create_module
+    so_path = build_module(spec.name, pyxfilename=spec.origin, pyxbuild_dir=self._pyxbuild_dir,
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\pyximport\_pyximport3.py", line 197, in build_module
+    so_path = pyxbuild.pyx_to_dll(pyxfilename, extension_mod,
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\pyximport\pyxbuild.py", line 103, in pyx_to_dll
+    dist.run_commands()
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\dist.py", line 1028, in run_commands
+    self.run_command(cmd)
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\dist.py", line 1106, in run_command
+    super().run_command(command)
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\dist.py", line 1047, in run_command
+    cmd_obj.run()
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\command\build_ext.py", line 382, in run
+    self.build_extensions()
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\command\build_ext.py", line 498, in build_extensions
+    self._build_extensions_serial()
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\command\build_ext.py", line 524, in _build_extensions_serial
+    self.build_extension(ext)
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\Cython\Distutils\build_ext.py", line 135, in build_extension
+    super(build_ext, self).build_extension(ext)
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\command\build_ext.py", line 585, in build_extension
+    objects = self.compiler.compile(
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\compilers\C\msvc.py", line 444, in compile
+    self.initialize()
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\compilers\C\msvc.py", line 354, in initialize
+    vc_env = _get_vc_env(plat_spec)
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\site-packages\setuptools\_distutils\compilers\C\msvc.py", line 152, in _get_vc_env
+    raise PlatformError(
+ImportError: Building module core.utils.blend.blend failed: ['distutils.compilers.errors.PlatformError: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/\n']

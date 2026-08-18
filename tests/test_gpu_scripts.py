@@ -10,6 +10,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 GPU_SCRIPTS = (
     PROJECT_ROOT / "scripts" / "gpu" / "setup_ditto_env.ps1",
     PROJECT_ROOT / "scripts" / "gpu" / "publish_checkpoint.ps1",
+    PROJECT_ROOT / "scripts" / "gpu" / "prepare_ditto_source.ps1",
+    PROJECT_ROOT / "scripts" / "gpu" / "install_ditto.ps1",
 )
 
 
@@ -102,3 +104,47 @@ def test_powershell_wddm_process_pattern_blocks_only_compute_types() -> None:
         timeout=30,
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_d3_installer_reuses_environment_and_protects_other_state() -> None:
+    content = GPU_SCRIPTS[3].read_text(encoding="utf-8")
+    folded = content.casefold()
+    assert "conda env create" not in folded
+    assert "conda install -n base" not in folded
+    assert "stop-process" not in folded
+    assert "taskkill" not in folded
+    assert "cuda_visible_devices" in folded
+    assert "conda run --no-capture-output -n $environmentname" in folded
+    assert "get-condafingerprint -name \"base\"" in folded
+    assert "get-torchfingerprint" in folded
+
+
+def test_d3_uses_pinned_official_revisions_and_excludes_tensorrt() -> None:
+    config = (PROJECT_ROOT / "config" / "ditto.yaml").read_text(encoding="utf-8")
+    requirements = (PROJECT_ROOT / "requirements" / "ditto.txt").read_text(encoding="utf-8")
+    preparation = GPU_SCRIPTS[2].read_text(encoding="utf-8")
+    assert "c3e47eee2e626500017a0556b470d6d4182f85e8" in config
+    assert "c3e47eee2e626500017a0556b470d6d4182f85e8" in preparation
+    assert "e4a2f60328ee7c32af585ac4b3cce299e4c8e254" in config
+    assert "onnxruntime-gpu==1.23.2" in requirements
+    assert "einops==0.8.1" in requirements
+    assert "matplotlib==3.10.8" in requirements
+    assert "sounddevice==0.5.5" in requirements
+    assert "tensorrt" not in requirements.casefold()
+    assert "cuda-python" not in requirements.casefold()
+    assert "polygraphy" not in requirements.casefold()
+    installer = GPU_SCRIPTS[3].read_text(encoding="utf-8").casefold()
+    assert "--no-deps mediapipe==0.10.35" in installer
+    assert "opencv-contrib-python" not in installer
+
+
+def test_d3_installer_rejects_empty_or_outdated_requirements() -> None:
+    content = GPU_SCRIPTS[3].read_text(encoding="utf-8").casefold()
+    assert "requirements/ditto.txt is empty, outdated" in content
+    assert '"pyyaml==6.0.2"' in content
+    assert '"huggingface-hub==0.36.0"' in content
+    assert '"onnxruntime-gpu==1.23.2"' in content
+    assert '"einops==0.8.1"' in content
+    assert '"matplotlib==3.10.8"' in content
+    assert '"sounddevice==0.5.5"' in content
+    assert "d3 dependency imports passed" in content

@@ -1,0 +1,49 @@
+{
+  "backend": "pytorch",
+  "checkpoint_id": "D3-DITTO-INSTALL-0003",
+  "created_at_utc": "2026-08-18T15:35:01.994223Z",
+  "environment": {
+    "compute_processes": [],
+    "conda_default_environment": "D:\\Data of all Students\\Humaisa\\conda-envs\\avatar-ditto",
+    "conda_prefix": "D:\\Data of all Students\\Humaisa\\conda-envs\\avatar-ditto",
+    "gpu": {
+      "driver_version": "591.86",
+      "memory_free_mb": 14988.0,
+      "memory_total_mb": 16311.0,
+      "name": "NVIDIA GeForce RTX 5060 Ti",
+      "utilization_gpu_percent": 0.0
+    },
+    "nvidia_smi": "NVIDIA GeForce RTX 5060 Ti, 16311, 14988, 591.86, 0",
+    "operating_system": "Windows",
+    "packages": {
+      "huggingface-hub": "0.36.0",
+      "imageio": "2.36.1",
+      "librosa": "0.10.2.post1",
+      "numpy": "2.0.1",
+      "onnxruntime-gpu": "1.23.2",
+      "opencv-python-headless": "4.10.0.84",
+      "scikit-image": "0.25.0",
+      "torch": "2.8.0+cu128",
+      "torchaudio": "2.8.0+cu128",
+      "torchvision": "0.23.0+cu128"
+    },
+    "python_executable": "D:\\Data of all Students\\Humaisa\\conda-envs\\avatar-ditto\\python.exe",
+    "python_version": "3.10.20",
+    "selected_gpu_index": 0,
+    "windows_version": "10.0.26200"
+  },
+  "errors": [
+    "ImportError: Building module core.utils.blend.blend failed: ['distutils.compilers.errors.PlatformError: Microsoft Visual C++ 14.0 or greater is required. Get it with \"Microsoft C++ Build Tools\": https://visualstudio.microsoft.com/visual-cpp-build-tools/\\n']"
+  ],
+  "model_load": {
+    "inference_executed": false,
+    "status": "not_attempted"
+  },
+  "runtime": {
+    "checkpoint_file_count": 12,
+    "checkpoint_revision": "e4a2f60328ee7c32af585ac4b3cce299e4c8e254",
+    "source_revision": "c3e47eee2e626500017a0556b470d6d4182f85e8"
+  },
+  "stage": "D3",
+  "status": "failed"
+}

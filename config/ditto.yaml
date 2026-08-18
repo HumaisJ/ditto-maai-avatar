@@ -1,0 +1,44 @@
+backend: pytorch
+
+source:
+  repository: https://github.com/antgroup/ditto-talkinghead.git
+  revision: c3e47eee2e626500017a0556b470d6d4182f85e8
+
+checkpoints:
+  repository: digital-avatar/ditto-talkinghead
+  revision: e4a2f60328ee7c32af585ac4b3cce299e4c8e254
+  config_file: ditto_cfg/v0.4_hubert_cfg_pytorch.pkl
+  data_root: ditto_pytorch
+  required_files:
+    - ditto_cfg/v0.4_hubert_cfg_pytorch.pkl
+    - ditto_pytorch/aux_models/2d106det.onnx
+    - ditto_pytorch/aux_models/det_10g.onnx
+    - ditto_pytorch/aux_models/face_landmarker.task
+    - ditto_pytorch/aux_models/hubert_streaming_fix_kv.onnx
+    - ditto_pytorch/aux_models/landmark203.onnx
+    - ditto_pytorch/models/appearance_extractor.pth
+    - ditto_pytorch/models/decoder.pth
+    - ditto_pytorch/models/lmdm_v0.4_hubert.pth
+    - ditto_pytorch/models/motion_extractor.pth
+    - ditto_pytorch/models/stitch_network.pth
+    - ditto_pytorch/models/warp_network.pth
+
+runtime:
+  root: .runtime/ditto
+  source_dir: source
+  checkpoint_dir: checkpoints
+  cache_dir: cache
+
+environment:
+  name: avatar-ditto
+  torch: 2.8.0+cu128
+  torchvision: 0.23.0+cu128
+  torchaudio: 2.8.0+cu128
+  onnxruntime_gpu: 1.23.2
+  mediapipe: 0.10.35
+  einops: 0.8.1
+
+safety:
+  expected_gpu: RTX 5060 Ti
+  minimum_free_vram_mb: 12000
+  maximum_utilization_percent: 20

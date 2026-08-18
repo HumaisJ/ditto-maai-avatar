@@ -1,0 +1,14 @@
+﻿{
+    "checkpoint_id":  "D3-DITTO-INSTALL-0001",
+    "stage":  "D3",
+    "status":  "failed",
+    "created_at_utc":  "2026-08-18T15:05:23.0834697Z",
+    "backend":  "pytorch",
+    "errors":  [
+                   "Ditto checkpoint download or verification failed."
+               ],
+    "model_load":  {
+                       "status":  "not_attempted",
+                       "inference_executed":  false
+                   }
+}

@@ -1,0 +1,30 @@
+Traceback (most recent call last):
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\scripts\check_ditto_install.py", line 302, in main
+    report["model_load"], model_log = load_ditto_models(
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\scripts\check_ditto_install.py", line 208, in load_ditto_models
+    sdk = StreamSDK(str(cfg_path), str(data_root))
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\stream_pipeline_online.py", line 57, in __init__
+    self.avatar_registrar = AvatarRegistrar(**avatar_registrar_cfg)
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\atomic_components\avatar_registrar.py", line 52, in __init__
+    self.source2info = Source2Info(
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\atomic_components\source2info.py", line 59, in __init__
+    self.insightface_det = InsightFaceDet(**insightface_det_cfg)
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\aux_models\insightface_det.py", line 62, in __init__
+    self.model, self.model_type = load_model(model_path, device=device, **kwargs)
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\utils\load_model.py", line 4, in load_model
+    model = load_force_ori_type(model_path, device, **kwargs)
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\utils\load_model.py", line 62, in load_force_ori_type
+    module = getattr(importlib.import_module(package_name, __package__), module_name)
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\aux_models\modules\__init__.py", line 4, in <module>
+    from .landmark478 import Landmark478
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\aux_models\modules\landmark478.py", line 2, in <module>
+    import mediapipe as mp
+ModuleNotFoundError: No module named 'mediapipe'

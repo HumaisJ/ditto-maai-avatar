@@ -50,3 +50,53 @@ The publisher refuses unrelated working-tree changes, commits only the named rep
 
 Stop after publishing the report. Ditto installation and checkpoints belong to Stage D3 and require
 a separate plan and approval.
+
+## D3: install and verify Ditto without inference
+
+D3 reuses the validated `avatar-ditto` environment. It does not recreate the environment, modify
+Conda `base`, install TensorRT, process a portrait or WAV file, or touch another user's process.
+
+### 1. Prepare the pinned source on the development PC
+
+From the Git checkout on the PC, run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/gpu/prepare_ditto_source.ps1
+```
+
+This produces one ZIP and one JSON manifest under `.transfer/`. Copy both files into the GPU copy
+of the project's `.transfer/` directory. Neither directory is tracked by Git.
+
+### 2. Restore the isolated Conda paths in GPU VS Code PowerShell
+
+From the GPU copy of the repository, run these session-scoped commands:
+
+```powershell
+$condaRoot = "C:\ProgramData\miniconda3"
+$studentRoot = "D:\Data of all Students\Humaisa"
+$env:Path = "$condaRoot;$condaRoot\Scripts;$condaRoot\Library\bin;$env:Path"
+$env:CONDA_ENVS_PATH = "$studentRoot\conda-envs"
+$env:CONDA_PKGS_DIRS = "$studentRoot\conda-packages"
+$env:PIP_CACHE_DIR = "$studentRoot\pip-cache"
+conda env list
+```
+
+Confirm that `avatar-ditto` resolves to the student's custom environment directory. No activation
+or separate Anaconda Prompt is required.
+
+### 3. Run the resumable D3 installer on GPU 0
+
+```powershell
+& .\scripts\gpu\install_ditto.ps1 `
+    -SourceArchive .\.transfer\ditto-source-c3e47eee.zip `
+    -SourceManifest .\.transfer\ditto-source-c3e47eee.manifest.json `
+    -GpuIndex 0
+```
+
+The checkpoint download is approximately 2.31 GB and may take time. It is resumable. The final
+step initializes the PyTorch and ONNX models once on GPU 0 and then exits; it does not run Ditto
+inference. Existing matching runtime files are reused, while conflicting files stop the script.
+
+Every attempt creates or preserves `results/environment/D3-DITTO-INSTALL-NNNN/`. Copy the printed
+report back to the development-PC checkout for review before D3 is marked complete. Do not proceed
+to D4 until the report says `status: passed`.

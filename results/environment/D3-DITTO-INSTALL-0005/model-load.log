@@ -1,0 +1,32 @@
+Traceback (most recent call last):
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\scripts\check_ditto_install.py", line 304, in main
+    report["model_load"], model_log = load_ditto_models(
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\scripts\check_ditto_install.py", line 210, in load_ditto_models
+    sdk = StreamSDK(str(cfg_path), str(data_root))
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\stream_pipeline_online.py", line 57, in __init__
+    self.avatar_registrar = AvatarRegistrar(**avatar_registrar_cfg)
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\atomic_components\avatar_registrar.py", line 52, in __init__
+    self.source2info = Source2Info(
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\atomic_components\source2info.py", line 64, in __init__
+    self.appearance_extractor = AppearanceExtractor(**appearance_extractor_cfg)
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\models\appearance_extractor.py", line 11, in __init__
+    self.model, self.model_type = load_model(model_path, device=device, **kwargs)
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\utils\load_model.py", line 27, in load_model
+    model = create_model(model_path, device, **kwargs)
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\utils\load_model.py", line 44, in create_model
+    module = getattr(importlib.import_module(package_name, __package__), module_name)
+  File "D:\Data of all Students\Humaisa\conda-envs\avatar-ditto\lib\importlib\__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\models\modules\__init__.py", line 6, in <module>
+    from .LMDM import LMDM
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\models\modules\LMDM.py", line 4, in <module>
+    from .lmdm_modules.model import MotionDecoder
+  File "D:\Data of all Students\Humaisa\dialogue-avatar\.runtime\ditto\source\core\models\modules\lmdm_modules\model.py", line 4, in <module>
+    from einops import rearrange
+ModuleNotFoundError: No module named 'einops'

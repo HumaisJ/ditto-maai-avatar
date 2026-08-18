@@ -1,0 +1,3 @@
+D3 Ditto installation verification: PASSED
+Pinned Ditto source, checkpoints, CUDA providers, and model load passed.
+No portrait/audio inference was executed.

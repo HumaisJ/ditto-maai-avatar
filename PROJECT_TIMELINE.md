@@ -6,10 +6,10 @@ it is not silently removed or marked complete.
 
 ## Current checkpoint
 
-- **Active goal:** None — Goal 2 is complete; Goal 3 awaits planning and approval.
-- **Current stage:** D2 isolated Windows GPU environment validated successfully.
-- **Last completed stage:** D2 — isolated GPU environment.
-- **Next decision:** Plan D3 installation and verification of Ditto/checkpoints.
+- **Active goal:** None — D3 is complete; D4 awaits planning and approval.
+- **Current stage:** D3 pinned Ditto installation and no-inference model-load validation complete.
+- **Last completed stage:** D3 — install and verify Ditto/checkpoints.
+- **Next decision:** Plan D4 using exactly one portrait and one short WAV for the first inference.
 - **Blocked:** No.
 
 ## Roadmap
@@ -20,7 +20,7 @@ it is not silently removed or marked complete.
 | Ditto | Asset normalization prerequisite | Complete |
 | Ditto | D1 — local experiment infrastructure | Complete |
 | Ditto | D2 — isolated GPU environment | Complete |
-| Ditto | D3 — install and verify Ditto/checkpoints | Not started |
+| Ditto | D3 — install and verify Ditto/checkpoints | Complete |
 | Ditto | D4 — one short portrait/audio inference | Not started |
 | Ditto | D5 — second controlled inference | Not started |
 | Ditto | D6 — three-pair mini-batch | Not started |
@@ -190,6 +190,110 @@ it is not silently removed or marked complete.
   this completed stage.
 - **Next step:** Plan D3 Ditto/checkpoint installation and import/path verification; do not install
   or download them until that plan is discussed and approved.
+
+### 2026-08-18 — D3 reproducible installation prepared
+
+- **Result:** Complete locally; GPU installation and model-load validation pending.
+- **Goal/stage:** Goal 3 / Stage D3.
+- **Work:** Pinned the official Ditto source and PyTorch checkpoint revisions; added a clean
+  source-transfer bundle, resumable selective checkpoint download, isolated dependency installation,
+  source/checkpoint hash verification, and guarded no-inference model initialization.
+- **Files/evidence:** `config/ditto.yaml`, `requirements/ditto.txt`, D3 scripts under `scripts/`, the
+  expanded Windows GPU runbook, and the ignored `.transfer/ditto-source-c3e47eee.*` bundle.
+- **Verification:** Ruff passed, all 75 tests passed including PowerShell parsing, and the 959061-byte
+  source archive matched its manifest SHA-256 with 64 source files and no staging directory left.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** Runtime source, checkpoints, and caches remain untracked under `.runtime/`.
+  TensorRT, portrait/audio inference, MaAI, and D4 work remain excluded.
+- **Next step:** Prepare the pinned source archive on the PC, copy the updated project and bundle to
+  the GPU machine, then run `install_ditto.ps1` on GPU 0 and return its preserved D3 report.
+
+### 2026-08-18 — D3 Windows ONNX Runtime pin correction
+
+- **Result:** Failed GPU attempt preserved; local correction prepared.
+- **Goal/stage:** Goal 3 / Stage D3.
+- **Work:** Replaced the unavailable ONNX Runtime 1.26.0 Windows/Python 3.10 pin with 1.23.2 and
+  added requirements-content and post-install import checks to the guarded installer.
+- **Files/evidence:** GPU reports `D3-DITTO-INSTALL-0001` and `0002`, dependency requirements,
+  Ditto configuration, installer, and focused regression tests.
+- **Verification:** ONNX Runtime 1.23.2 has an official CPython 3.10 Windows wheel and uses the
+  CUDA 12.8/cuDNN 9 line required by the validated PyTorch environment; Ruff and all 76 tests passed.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** No checkpoint download or model load occurred. Partial dependency work
+  remained confined to `avatar-ditto`; no other environment, GPU process, or system package changed.
+- **Next step:** Copy the corrected requirements, config, and installer to the GPU project, verify
+  their hashes, and rerun the resumable D3 installer on GPU 0.
+
+### 2026-08-18 — D3 Windows blend compatibility correction
+
+- **Result:** Dependencies and all 12 checkpoints verified; model import failed and a local
+  compatibility correction was prepared.
+- **Goal/stage:** Goal 3 / Stage D3.
+- **Work:** Added a vectorized NumPy equivalent for Ditto's small Cython image-blend kernel and
+  inject it under the upstream import name on Windows before `StreamSDK` is imported.
+- **Files/evidence:** GPU report `D3-DITTO-INSTALL-0003`, Windows compatibility helper, model-load
+  verifier, and numerical equivalence regression tests.
+- **Verification:** The fallback preserves the upstream mask blend, clipping, truncation, output
+  dtype, in-place result contract, and direct script import path; Ruff and all 79 tests passed.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** No compiler or system package will be installed on the shared GPU machine.
+  The pinned upstream source and checkpoint files remain unchanged and hash-verified.
+- **Next step:** Copy the verifier and compatibility helper to the GPU project and rerun D3; the
+  existing dependencies, source, and verified checkpoint download will be reused.
+
+### 2026-08-18 — D3 MediaPipe dependency correction
+
+- **Result:** Source, dependencies, CUDA preparation, Windows blend import, and checkpoints passed;
+  model initialization exposed one missing dependency and a correction was prepared.
+- **Goal/stage:** Goal 3 / Stage D3.
+- **Work:** Added official MediaPipe 0.10.35 and its pinned Python dependencies while deliberately
+  retaining the existing headless OpenCV package instead of installing a conflicting `cv2` wheel.
+- **Files/evidence:** GPU report `D3-DITTO-INSTALL-0004`, requirements, Ditto configuration,
+  guarded installer, package-report validation, and focused regression tests.
+- **Verification:** The official wheel supports Windows x86-64 and contains the required MediaPipe
+  Tasks `FaceLandmarker`/`BaseOptions` interfaces; Ruff and all 79 tests passed.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** MediaPipe is installed with `--no-deps`; its needed dependencies are
+  explicitly pinned, and `opencv-python-headless` remains the sole provider of `cv2`.
+- **Next step:** Copy the corrected requirements, config, installer, and verifier to the GPU project,
+  then rerun D3 using the existing source and checkpoint files.
+
+### 2026-08-18 — D3 PyTorch-path import audit
+
+- **Result:** MediaPipe and the Windows compatibility path passed; model initialization exposed
+  `einops` as the remaining omitted PyTorch-path dependency.
+- **Goal/stage:** Goal 3 / Stage D3.
+- **Work:** Audited all top-level imports in the pinned Ditto source and added pinned `einops` to
+  installation preflight, dependency imports, configuration, and package-version reporting.
+- **Files/evidence:** GPU report `D3-DITTO-INSTALL-0005`, requirements, Ditto configuration,
+  installer, verifier, and dependency regression tests.
+- **Verification:** Static audit confirms the other uninstalled imports belong only to the excluded
+  TensorRT backend; `einops` 0.8.1 supports Python 3.10, NumPy, and PyTorch; Ruff and all 79 tests
+  passed.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** No TensorRT, CUDA-Python, compiler, second OpenCV distribution, or system
+  dependency will be installed. Existing verified checkpoints remain reusable.
+- **Next step:** Copy the four corrected dependency-contract files and rerun D3 on GPU 0.
+
+### 2026-08-18 — D3 Ditto installation and model-load validation
+
+- **Result:** Complete.
+- **Goal/stage:** Goal 3 / Stage D3.
+- **Work:** Installed the pinned PyTorch Ditto dependency set in `avatar-ditto`, retained headless
+  OpenCV, installed official MediaPipe without its conflicting OpenCV dependency, verified pinned
+  source/checkpoints, and initialized `stream_pipeline_online.StreamSDK` once on GPU 0.
+- **Files/evidence:** `results/environment/D3-DITTO-INSTALL-0001` through `0006`; reports `0001`–
+  `0005` preserve diagnostic failures and `0006` is the passing checkpoint with `errors: []`.
+- **Verification:** Ditto source `c3e47eee2e626500017a0556b470d6d4182f85e8`; checkpoint revision
+  `e4a2f60328ee7c32af585ac4b3cce299e4c8e254`; all 12 files and 2314719638 bytes matched upstream
+  hashes; CUDA Execution Provider was available; `StreamSDK` loaded in 5.404 seconds; Ruff and all
+  79 local tests passed.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** D3 used the PyTorch backend and the recorded NumPy Windows blend fallback.
+  No portrait/audio inference, video generation, TensorRT optimization, MaAI work, or process
+  modification occurred.
+- **Next step:** Plan D4 as one controlled inference with exactly one portrait and one short WAV;
+  do not run it until its input choice, command, output report, and stop conditions are approved.
 
 ## Entry template
 
