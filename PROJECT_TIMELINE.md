@@ -6,12 +6,11 @@ it is not silently removed or marked complete.
 
 ## Current checkpoint
 
-- **Active goal:** Goal 2 — validate an isolated GPU environment.
-- **Current stage:** D2 Windows environment package prepared for the Git-free GPU workflow;
-  awaiting execution on GPU 0 of the shared machine.
-- **Last completed stage:** D1 — local experiment infrastructure.
-- **Next decision:** Review the GPU environment report before installing Ditto or checkpoints.
-- **Blocked:** No. Remote validation is awaiting the prepared PowerShell workflow.
+- **Active goal:** None — Goal 2 is complete; Goal 3 awaits planning and approval.
+- **Current stage:** D2 isolated Windows GPU environment validated successfully.
+- **Last completed stage:** D2 — isolated GPU environment.
+- **Next decision:** Plan D3 installation and verification of Ditto/checkpoints.
+- **Blocked:** No.
 
 ## Roadmap
 
@@ -20,7 +19,7 @@ it is not silently removed or marked complete.
 | Ditto | D0 — repository and environment inspection | Complete |
 | Ditto | Asset normalization prerequisite | Complete |
 | Ditto | D1 — local experiment infrastructure | Complete |
-| Ditto | D2 — isolated GPU environment | In progress |
+| Ditto | D2 — isolated GPU environment | Complete |
 | Ditto | D3 — install and verify Ditto/checkpoints | Not started |
 | Ditto | D4 — one short portrait/audio inference | Not started |
 | Ditto | D5 — second controlled inference | Not started |
@@ -173,6 +172,24 @@ it is not silently removed or marked complete.
   compute-process errors. D2 remains in progress until the corrected validator records a pass.
 - **Next step:** Copy the corrected validator to the GPU machine and rerun it, preserving report
   `D2-GPU-ENV-0004`.
+
+### 2026-08-18 — D2 isolated GPU environment validated
+
+- **Result:** Complete.
+- **Goal/stage:** Goal 2 / Stage D2.
+- **Work:** Created the isolated `avatar-ditto` Conda environment in the student's directory,
+  installed PyTorch 2.8.0+cu128, and completed the guarded CUDA validation on GPU 0.
+- **Files/evidence:** `results/environment/D2-GPU-ENV-0001` through `D2-GPU-ENV-0004`; report
+  `0004` is the passing checkpoint and reports `errors: []`.
+- **Verification:** Windows 10.0.26200, Python 3.10.20, FFmpeg, RTX 5060 Ti with 16311 MiB VRAM,
+  driver 591.86, 14900 MiB free VRAM, 0% utilization, no compute-only process on GPU 0, PyTorch
+  2.8.0+cu128, CUDA 12.8, capability 12.0, compiled `sm_120`, and a successful CUDA tensor result.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** D2 is complete. Failed reports `0001`–`0003` are preserved as diagnostic
+  history. Ditto, model checkpoints, inference, TensorRT, MaAI, and batch execution remain outside
+  this completed stage.
+- **Next step:** Plan D3 Ditto/checkpoint installation and import/path verification; do not install
+  or download them until that plan is discussed and approved.
 
 ## Entry template
 

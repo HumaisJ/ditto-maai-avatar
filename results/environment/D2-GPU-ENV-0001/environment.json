@@ -1,0 +1,12 @@
+﻿{
+    "checkpoint_id":  "D2-GPU-ENV-0001",
+    "stage":  "D2",
+    "status":  "failed",
+    "created_at_utc":  "2026-08-18T07:56:38.1051065Z",
+    "errors":  [
+                   "Required command is unavailable: conda"
+               ],
+    "environment":  {
+                        "setup_phase":  "powershell_preflight_or_install"
+                    }
+}
