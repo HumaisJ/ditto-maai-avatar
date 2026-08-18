@@ -65,3 +65,51 @@ d5:
   pipeline: offline
   gpu_sample_interval_sec: 1.0
   output_filename: generated.mp4
+
+d7:
+  batch_id: DITTO-BATCH-0001
+  execution: sequential
+  failure_policy: fail_fast
+  resume_policy: verified_successes_only
+  audio_mode: full
+  seed: 1024
+  fps: 25
+  pipeline: offline
+  gpu_sample_interval_sec: 1.0
+  output_filename: generated.mp4
+  minimum_free_disk_mb: 5120
+  runs:
+    - pair_id: P007
+      experiment_id: DITTO-EXP-0003
+    - pair_id: P003
+      experiment_id: DITTO-EXP-0004
+    - pair_id: P015
+      experiment_id: DITTO-EXP-0005
+    - pair_id: P011
+      experiment_id: DITTO-EXP-0006
+    - pair_id: P012
+      experiment_id: DITTO-EXP-0007
+    - pair_id: P009
+      experiment_id: DITTO-EXP-0008
+    - pair_id: P002
+      experiment_id: DITTO-EXP-0009
+    - pair_id: P010
+      experiment_id: DITTO-EXP-0010
+    - pair_id: P013
+      experiment_id: DITTO-EXP-0011
+    - pair_id: P017
+      experiment_id: DITTO-EXP-0012
+    - pair_id: P004
+      experiment_id: DITTO-EXP-0013
+    - pair_id: P001
+      experiment_id: DITTO-EXP-0014
+    - pair_id: P006
+      experiment_id: DITTO-EXP-0015
+    - pair_id: P005
+      experiment_id: DITTO-EXP-0016
+    - pair_id: P016
+      experiment_id: DITTO-EXP-0017
+    - pair_id: P014
+      experiment_id: DITTO-EXP-0018
+    - pair_id: P008
+      experiment_id: DITTO-EXP-0019

@@ -14,6 +14,7 @@ GPU_SCRIPTS = (
     PROJECT_ROOT / "scripts" / "gpu" / "install_ditto.ps1",
     PROJECT_ROOT / "scripts" / "gpu" / "run_ditto_d4.ps1",
     PROJECT_ROOT / "scripts" / "gpu" / "run_ditto_d5.ps1",
+    PROJECT_ROOT / "scripts" / "gpu" / "run_ditto_d7.ps1",
 )
 
 
@@ -177,6 +178,24 @@ def test_d5_wrapper_requires_d4_and_never_changes_other_processes() -> None:
     assert "$d4report.status -ne \"succeeded\"" in folded
     assert "--stage d5" in folded
     assert "another compute-only process" in folded
+    assert "12000" in content
+    assert '$env:CUDA_VISIBLE_DEVICES = "$GpuIndex"' in content
+    assert "conda run --no-capture-output -n $environmentname" in folded
+    assert "stop-process" not in folded
+    assert "taskkill" not in folded
+    assert "conda env create" not in folded
+    assert "pip install" not in folded
+
+
+def test_d7_wrapper_is_sequential_resumable_and_never_changes_other_processes() -> None:
+    content = GPU_SCRIPTS[6].read_text(encoding="utf-8")
+    folded = content.casefold()
+    assert "d7 is approved only for physical gpu 0" in folded
+    assert "ditto-batch-0001" in folded
+    assert "--gpu-index $gpuindex @resumeargument" in folded
+    assert "only a cleanly interrupted" in folded
+    assert "another compute-only process" in folded
+    assert "5120" in content
     assert "12000" in content
     assert '$env:CUDA_VISIBLE_DEVICES = "$GpuIndex"' in content
     assert "conda run --no-capture-output -n $environmentname" in folded

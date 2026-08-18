@@ -7,9 +7,9 @@ it is not silently removed or marked complete.
 ## Current checkpoint
 
 - **Active goal:** Goal 4 — confirm Ditto on multiple controlled inputs.
-- **Current stage:** D6 three-pair mini-batch planning.
+- **Current stage:** D7 full 17-pair batch tooling prepared locally; GPU execution is pending.
 - **Last completed stage:** D5 — second controlled inference with complete paired audio.
-- **Next decision:** Approve the D6 subset, batch runner, workload estimate, and stop conditions.
+- **Next decision:** Transfer the committed D7 tooling and run `DITTO-BATCH-0001` on GPU 0.
 - **Blocked:** No.
 
 ## Roadmap
@@ -23,8 +23,8 @@ it is not silently removed or marked complete.
 | Ditto | D3 — install and verify Ditto/checkpoints | Complete |
 | Ditto | D4 — one short portrait/audio inference | Complete |
 | Ditto | D5 — second controlled inference | Complete |
-| Ditto | D6 — three-pair mini-batch | Planning |
-| Ditto | D7 — full 17-pair baseline | Not started |
+| Ditto | D6 — three-pair mini-batch | Skipped by user decision |
+| Ditto | D7 — full 17-pair baseline | Prepared locally |
 | Ditto | D8 — optional 289-run cross-product | Not approved |
 | Ditto | D9 — local chunked-audio streaming | Not started |
 | MaAI | M0 — isolated environment | Not started |
@@ -375,6 +375,30 @@ it is not silently removed or marked complete.
 - **Next step:** Plan a guarded three-pair D6 mini-batch using suitable portraits and short, medium,
   and longer complete paired WAV files; do not start GPU inference until its runner and stop
   conditions are reviewed.
+
+### 2026-08-19 — D7 complete 17-pair baseline tooling prepared
+
+- **Result:** Complete locally; D7 GPU execution is pending.
+- **Goal/stage:** Goal 4 / Stage D7; D6 was skipped by explicit user decision after D5 produced a
+  usable result and the user chose to proceed directly to the complete paired baseline.
+- **Work:** Fixed all 17 manifest pairs into one shortest-to-longest sequential batch; added
+  per-item fresh-process execution, GPU/disk/runtime preflight checks, fail-fast preservation,
+  batch-level JSON/CSV evidence, visual-review template, and verified-success-only resume for a
+  clean interruption. Added a guarded Windows PowerShell wrapper and GPU runbook.
+- **Files/evidence:** `config/ditto.yaml`, `scripts/run_ditto_batch.py`, the extended controlled
+  single-runner, `scripts/gpu/run_ditto_d7.ps1`, D7 tests, and `docs/GPU_SETUP_WINDOWS.md`.
+- **Verification:** All 104 tests passed, including simulated 17/17 success, first-item failure,
+  interruption after one success followed by a 16-item resume, exact IDs/order, and PowerShell
+  parsing. Ruff and project validation passed; all 17 portrait/WAV pairs remain valid.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** The approved run is `DITTO-BATCH-0001`, with initial experiments
+  `DITTO-EXP-0003` through `DITTO-EXP-0019`, 3064.867 seconds of complete audio, sequential
+  execution, and fail-fast behavior. Estimated GPU time is 1 hour 45 minutes to 2 hours 15 minutes,
+  with 200–400 MB generated output and a 5120 MiB free-disk floor. A failed or ambiguous item is
+  preserved and cannot be resumed automatically. No model inference, package installation, or GPU
+  process change occurred during local implementation.
+- **Next step:** Copy the committed D7 tooling to the existing GPU project, run the fresh wrapper
+  once on physical GPU 0, and return the batch plus all 17 experiment directories for review.
 
 ## Entry template
 

@@ -175,3 +175,64 @@ powershell -NoProfile -ExecutionPolicy Bypass `
 Whether it succeeds or fails, do not rerun it. Copy the entire `DITTO-EXP-0002` directory back to
 the development PC. Watch the complete video with sound and enter a numeric 1–5 score for every
 visual-review field in `notes.md`. Any score of 1 stops progression before D6.
+
+## D7: run the complete 17-pair offline baseline
+
+D6 was deliberately skipped by explicit user decision after the successful and usable D5 result.
+D7 runs all 17 manifest pairs with their complete WAV files. This is one batch, not a subset or the
+optional 289-run cross-product. The fixed order is shortest to longest, execution is sequential,
+and the initial experiment IDs are `DITTO-EXP-0003` through `DITTO-EXP-0019` under batch
+`DITTO-BATCH-0001`.
+
+The inputs contain 3064.867 seconds (51.08 minutes) of audio. Based on D5, allow approximately
+1 hour 45 minutes to 2 hours 15 minutes and 200–400 MB for generated videos. The wrapper requires
+at least 5120 MiB free disk space, 12000 MiB free VRAM, no compute-only process on physical GPU 0,
+the existing `avatar-ditto` environment, the reviewed D4/D5 evidence, and the pinned runtime. It
+does not install packages, modify another environment, stop a process, or use GPU 1.
+
+Copy the committed D7 project files to the GPU project while preserving `.runtime/`, `.transfer/`,
+and `results/`. Restore the session-scoped Conda variables shown in D3. Before the fresh batch,
+confirm D4 and D5 remain successful and no D7 evidence exists:
+
+```powershell
+Get-ChildItem .\results\experiments -Directory -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -like "DITTO-EXP-*" } |
+    Select-Object Name
+
+Test-Path .\results\batches\DITTO-BATCH-0001
+
+nvidia-smi --query-gpu=index,name,memory.used,memory.free,memory.total,utilization.gpu --format=csv
+```
+
+The experiment listing must contain only `DITTO-EXP-0001` and `DITTO-EXP-0002`, and `Test-Path`
+must return `False`. When GPU 0 meets the safety thresholds, start the batch exactly once:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+    -File .\scripts\gpu\run_ditto_d7.ps1 `
+    -GpuIndex 0
+```
+
+The batch runner validates GPU safety before every pair, launches every pair in a fresh child
+process to release its CUDA context, validates each MP4 and audio stream, and updates `batch.json`,
+`summary.csv`, and `failures.csv` after every item. It stops at the first failed or invalid item.
+It never deletes or overwrites evidence.
+
+If GPU safety changes before the next item or the runner is cleanly interrupted between items,
+`batch.json` records `status: interrupted`. Preserve and review the evidence before using the
+explicit resume mode:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+    -File .\scripts\gpu\run_ditto_d7.ps1 `
+    -GpuIndex 0 `
+    -Resume
+```
+
+Resume verifies and skips successful items; it is refused for failed, ambiguous, changed, or
+already-complete batches. A failed experiment must be diagnosed before any retry is approved.
+
+After technical success, copy `results/batches/DITTO-BATCH-0001/` and all experiment directories
+from `DITTO-EXP-0003` through `DITTO-EXP-0019` to the development PC. Watch all 17 videos with
+sound and complete every score in the batch `visual_review.csv`. Do not start another model stage
+until the technical evidence and subjective review have been checked and committed.

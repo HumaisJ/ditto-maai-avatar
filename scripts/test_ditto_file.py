@@ -1,9 +1,10 @@
-"""Run one approved controlled offline Ditto inference for D4 or D5."""
+"""Run one approved controlled offline Ditto inference for D4, D5, or a D7 batch item."""
 
 from __future__ import annotations
 
 import argparse
 import contextlib
+import json
 import sys
 from pathlib import Path
 from typing import Any, TextIO
@@ -55,6 +56,7 @@ class _Tee:
 STAGE_PURPOSES = {
     "D4": "D4: one portrait and one short audio produce one valid video.",
     "D5": "D5: another portrait and one complete longer audio produce one valid video.",
+    "D7": "D7: one item in the complete 17-pair offline Ditto baseline.",
 }
 
 
@@ -95,6 +97,37 @@ def ensure_experiment_sequence(results_root: Path, stage: str) -> None:
         raise RuntimeError("D5 requires a successful DITTO-EXP-0001 result.")
 
 
+def ensure_d7_experiment_sequence(
+    results_root: Path,
+    runs: list[dict[str, str]],
+    *,
+    pair_id: str,
+    expected_experiment_id: str,
+) -> None:
+    """Require all earlier D7 items to have succeeded and forbid any later attempt."""
+    expected = [(run["pair_id"], run["experiment_id"]) for run in runs]
+    try:
+        position = expected.index((pair_id, expected_experiment_id))
+    except ValueError as exc:
+        raise ValueError("D7 pair and experiment ID do not match the approved batch") from exc
+
+    required_ids = ["DITTO-EXP-0001", "DITTO-EXP-0002"]
+    required_ids.extend(experiment_id for _, experiment_id in expected[:position])
+    existing = {
+        path.name: path
+        for path in results_root.glob("DITTO-EXP-*")
+        if path.is_dir() and path.name.removeprefix("DITTO-EXP-").isdigit()
+    } if results_root.is_dir() else {}
+    if set(existing) != set(required_ids):
+        raise RuntimeError(
+            f"D7 {expected_experiment_id} requires exactly the retained successful experiments: "
+            + ", ".join(required_ids)
+        )
+    for experiment_id in required_ids:
+        if _read_experiment_status(existing[experiment_id]) != "succeeded":
+            raise RuntimeError(f"D7 requires successful prior experiment {experiment_id}")
+
+
 def _validate_stage_config(config: dict[str, Any], stage: str) -> dict[str, Any]:
     expected_by_stage = {
         "D4": {
@@ -121,6 +154,48 @@ def _validate_stage_config(config: dict[str, Any], stage: str) -> dict[str, Any]
             "output_filename": "generated.mp4",
         },
     }
+    if stage == "D7":
+        stage_config = config.get("d7")
+        if not isinstance(stage_config, dict):
+            raise ValueError("config/ditto.yaml is missing the D7 configuration")
+        expected_common = {
+            "batch_id": "DITTO-BATCH-0001",
+            "execution": "sequential",
+            "failure_policy": "fail_fast",
+            "resume_policy": "verified_successes_only",
+            "audio_mode": "full",
+            "seed": 1024,
+            "fps": 25,
+            "pipeline": "offline",
+            "gpu_sample_interval_sec": 1.0,
+            "output_filename": "generated.mp4",
+            "minimum_free_disk_mb": 5120,
+        }
+        for key, expected_value in expected_common.items():
+            if stage_config.get(key) != expected_value:
+                raise ValueError(
+                    f"D7 {key} must be {expected_value!r}, got {stage_config.get(key)!r}"
+                )
+        runs = stage_config.get("runs")
+        if not isinstance(runs, list) or len(runs) != 17:
+            raise ValueError("D7 must define exactly 17 ordered runs")
+        if any(
+            not isinstance(run, dict)
+            or set(run) != {"pair_id", "experiment_id"}
+            or not isinstance(run["pair_id"], str)
+            or not isinstance(run["experiment_id"], str)
+            for run in runs
+        ):
+            raise ValueError("each D7 run must contain only pair_id and experiment_id strings")
+        pair_ids = [run["pair_id"] for run in runs]
+        experiment_ids = [run["experiment_id"] for run in runs]
+        expected_pair_ids = {f"P{number:03d}" for number in range(1, 18)}
+        if len(set(pair_ids)) != 17 or set(pair_ids) != expected_pair_ids:
+            raise ValueError("D7 runs must contain every manifest pair exactly once")
+        if experiment_ids != [f"DITTO-EXP-{number:04d}" for number in range(3, 20)]:
+            raise ValueError("D7 experiment IDs must be DITTO-EXP-0003 through DITTO-EXP-0019")
+        return stage_config
+
     expected = expected_by_stage.get(stage)
     if expected is None:
         raise ValueError(f"unsupported controlled Ditto stage: {stage}")
@@ -158,12 +233,16 @@ def _prepare_inference_audio(
 
 
 def _append_visual_review_template(path: Path, stage: str = "D4") -> None:
-    if stage == "D5":
+    if stage in {"D5", "D7"}:
         instruction = (
             "Use 1 = unacceptable, 2 = poor, 3 = usable, 4 = good, and 5 = excellent. "
             "Complete every field after watching the full video."
         )
-        stop_message = "Any score of 1 blocks D6 until the D5 result is diagnosed."
+        stop_message = (
+            "Any score of 1 blocks D6 until the D5 result is diagnosed."
+            if stage == "D5"
+            else "Any score of 1 must be diagnosed before the D7 baseline is concluded."
+        )
     else:
         instruction = "Use 1 = unacceptable, 2 = poor, 3 = usable, 4 = good, 5 = excellent, or N/A."
         stop_message = "Any score of 1 blocks D5 until the D4 result is diagnosed."
@@ -181,12 +260,16 @@ def _append_visual_review_template(path: Path, stage: str = "D4") -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--stage", choices=("D4", "D5"), default="D4")
+    parser.add_argument("--stage", choices=("D4", "D5", "D7"), default="D4")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--runtime-root", type=Path, default=DEFAULT_RUNTIME)
     parser.add_argument("--results-root", type=Path, default=DEFAULT_RESULTS)
     parser.add_argument("--gpu-index", type=int, default=0)
+    parser.add_argument("--pair-id")
+    parser.add_argument("--expected-experiment-id")
+    parser.add_argument("--batch-id")
+    parser.add_argument("--batch-directory", type=Path)
     return parser
 
 
@@ -196,15 +279,54 @@ def main(argv: list[str] | None = None) -> int:
     config = load_config(args.config.resolve())
     stage_config = _validate_stage_config(config, stage)
     results_root = args.results_root.resolve()
-    ensure_experiment_sequence(results_root, stage)
+    if stage == "D7":
+        if (
+            not args.pair_id
+            or not args.expected_experiment_id
+            or not args.batch_id
+            or args.batch_directory is None
+        ):
+            raise ValueError(
+                "D7 requires --pair-id, --expected-experiment-id, --batch-id, "
+                "and --batch-directory"
+            )
+        if args.batch_id != stage_config["batch_id"]:
+            raise ValueError("D7 batch ID does not match the approved configuration")
+        batch_directory = args.batch_directory.resolve()
+        batch_report = json.loads((batch_directory / "batch.json").read_text(encoding="utf-8"))
+        if batch_report.get("batch_id") != args.batch_id or batch_report.get("status") != "running":
+            raise RuntimeError("D7 item requires its active approved batch record")
+        approved_item = next(
+            (
+                item
+                for item in batch_report.get("runs", [])
+                if item.get("pair_id") == args.pair_id
+                and item.get("experiment_id") == args.expected_experiment_id
+            ),
+            None,
+        )
+        if approved_item is None or approved_item.get("status") != "pending":
+            raise RuntimeError("D7 item is not the pending run in its batch record")
+        ensure_d7_experiment_sequence(
+            results_root,
+            stage_config["runs"],
+            pair_id=args.pair_id,
+            expected_experiment_id=args.expected_experiment_id,
+        )
+        selected_pair_id = args.pair_id
+        expected_experiment_id = args.expected_experiment_id
+    else:
+        ensure_experiment_sequence(results_root, stage)
+        selected_pair_id = stage_config["pair_id"]
+        expected_experiment_id = stage_config["experiment_id"]
 
     entries = load_manifest(args.manifest.resolve())
     validate_manifest(entries, PROJECT_ROOT, expected_count=17)
     selected = next(
-        (entry for entry in entries if entry.pair_id == stage_config["pair_id"]), None
+        (entry for entry in entries if entry.pair_id == selected_pair_id), None
     )
     if selected is None:
-        raise RuntimeError(f"manifest does not contain {stage} pair {stage_config['pair_id']}")
+        raise RuntimeError(f"manifest does not contain {stage} pair {selected_pair_id}")
 
     portrait = (PROJECT_ROOT / selected.portrait_path).resolve()
     original_audio = (PROJECT_ROOT / selected.audio_path).resolve()
@@ -230,6 +352,12 @@ def main(argv: list[str] | None = None) -> int:
         "inference": stage_config,
         "ditto": config,
     }
+    if stage == "D7":
+        run_config["batch_id"] = args.batch_id
+        run_config["batch_path"] = str(batch_directory.relative_to(PROJECT_ROOT)).replace(
+            "\\", "/"
+        )
+        run_config["expected_experiment_id"] = expected_experiment_id
     run = ExperimentRun.create(
         project_root=PROJECT_ROOT,
         results_root=results_root,
@@ -249,10 +377,10 @@ def main(argv: list[str] | None = None) -> int:
             "pipeline": "stream_pipeline_offline.StreamSDK",
         },
     )
-    if run.experiment_id != stage_config["experiment_id"]:
+    if run.experiment_id != expected_experiment_id:
         with run:
             raise RuntimeError(
-                f"{stage} allocated {run.experiment_id}; expected {stage_config['experiment_id']}"
+                f"{stage} allocated {run.experiment_id}; expected {expected_experiment_id}"
             )
     output = run.directory / stage_config["output_filename"]
     run.set_output_path(output)
@@ -318,6 +446,9 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"{stage} experiment completed: {run.experiment_id}")
     print(f"Results: {run.directory}")
+    if stage == "D7":
+        print("Control returns to DITTO-BATCH-0001; do not launch this item directly.")
+        return 0
     next_stage = "D5" if stage == "D4" else "D6"
     print(
         "Stop here. Copy this directory to the PC and complete the visual review "

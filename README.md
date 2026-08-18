@@ -1,8 +1,8 @@
 # Dialogue Avatar Research Project
 
 This repository is the controlled research workspace for a real-time dialogue avatar built from
-Ditto, MaAI, and a small motion controller. Development proceeds in measured stages; the current
-local infrastructure does not install or run either model.
+Ditto, MaAI, and a small motion controller. Development proceeds in measured stages; local checks
+do not run either model, while separately approved GPU scripts guard model setup and experiments.
 
 Current progress, evidence, and the next approved checkpoint are maintained in
 [`PROJECT_TIMELINE.md`](PROJECT_TIMELINE.md).
