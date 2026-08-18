@@ -10,9 +10,9 @@ import re
 import traceback
 import wave
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Self
+from typing import Any
 
 from src.utils.logger import close_experiment_logger, create_experiment_logger
 from src.utils.system_info import collect_system_info, initialize_gpu_csv
@@ -22,7 +22,7 @@ KIND_PATTERN = re.compile(r"^[A-Z][A-Z0-9_]*$")
 
 def utc_now() -> str:
     """Return an ISO 8601 UTC timestamp using a trailing Z."""
-    return datetime.now(UTC).isoformat().replace("+00:00", "Z")
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")  # noqa: UP017
 
 
 def sha256_file(path: Path | str) -> str:
@@ -107,7 +107,7 @@ class ExperimentRun:
         inputs: dict[str, Path | str] | None = None,
         model: dict[str, Any] | None = None,
         id_width: int = 4,
-    ) -> Self:
+    ) -> ExperimentRun:
         """Allocate and initialize a new experiment directory."""
         normalized_kind = kind.upper()
         if not KIND_PATTERN.fullmatch(normalized_kind):
@@ -169,7 +169,7 @@ class ExperimentRun:
         logger.info("Experiment initialized: %s", experiment_id)
         return run
 
-    def __enter__(self) -> Self:
+    def __enter__(self) -> ExperimentRun:
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback) -> bool:

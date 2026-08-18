@@ -42,3 +42,13 @@ safety:
   expected_gpu: RTX 5060 Ti
   minimum_free_vram_mb: 12000
   maximum_utilization_percent: 20
+
+d4:
+  pair_id: P007
+  clip_start_sec: 0.0
+  clip_duration_sec: 5.0
+  seed: 1024
+  fps: 25
+  pipeline: offline
+  gpu_sample_interval_sec: 1.0
+  output_filename: generated.mp4

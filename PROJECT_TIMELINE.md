@@ -6,10 +6,10 @@ it is not silently removed or marked complete.
 
 ## Current checkpoint
 
-- **Active goal:** None — D3 is complete; D4 awaits planning and approval.
-- **Current stage:** D3 pinned Ditto installation and no-inference model-load validation complete.
+- **Active goal:** Goal 3 — produce one saved Ditto portrait/audio video.
+- **Current stage:** D4 tooling prepared locally; the single GPU inference is pending.
 - **Last completed stage:** D3 — install and verify Ditto/checkpoints.
-- **Next decision:** Plan D4 using exactly one portrait and one short WAV for the first inference.
+- **Next decision:** Transfer the committed D4 tooling and run it exactly once on GPU 0.
 - **Blocked:** No.
 
 ## Roadmap
@@ -21,7 +21,7 @@ it is not silently removed or marked complete.
 | Ditto | D1 — local experiment infrastructure | Complete |
 | Ditto | D2 — isolated GPU environment | Complete |
 | Ditto | D3 — install and verify Ditto/checkpoints | Complete |
-| Ditto | D4 — one short portrait/audio inference | Not started |
+| Ditto | D4 — one short portrait/audio inference | Prepared locally |
 | Ditto | D5 — second controlled inference | Not started |
 | Ditto | D6 — three-pair mini-batch | Not started |
 | Ditto | D7 — full 17-pair baseline | Not started |
@@ -294,6 +294,25 @@ it is not silently removed or marked complete.
   modification occurred.
 - **Next step:** Plan D4 as one controlled inference with exactly one portrait and one short WAV;
   do not run it until its input choice, command, output report, and stop conditions are approved.
+
+### 2026-08-18 — D4 single-inference tooling prepared
+
+- **Result:** Complete locally; the one GPU inference is pending.
+- **Goal/stage:** Goal 3 / Stage D4.
+- **Work:** Added deterministic five-second P007 WAV extraction, the pinned offline PyTorch Ditto
+  adapter, bundled-FFmpeg mux and media validation, continuous GPU sampling, a complete experiment
+  record, visual-review template, and a one-run Windows GPU wrapper.
+- **Files/evidence:** `config/ditto.yaml`, `scripts/test_ditto_file.py`,
+  `scripts/gpu/run_ditto_d4.ps1`, the Ditto adapter, experiment utilities, tests, and GPU runbook.
+- **Verification:** Ruff passed and all 91 local tests passed, including Python 3.10 compatibility,
+  exact PCM extraction,
+  single-run enforcement, GPU metric aggregation, output stream validation, and PowerShell parsing.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** D4 uses only P007 and a reproducible first-five-second excerpt on physical
+  GPU 0. No local/GPU inference, second attempt, full audio, batch, TensorRT, or other-process
+  modification occurred while preparing the tooling.
+- **Next step:** Copy the committed files to the GPU project, run the D4 wrapper exactly once, copy
+  `DITTO-EXP-0001` back, and complete its visual review before any D5 work.
 
 ## Entry template
 

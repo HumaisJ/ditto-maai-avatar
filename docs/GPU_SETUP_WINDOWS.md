@@ -100,3 +100,42 @@ inference. Existing matching runtime files are reused, while conflicting files s
 Every attempt creates or preserves `results/environment/D3-DITTO-INSTALL-NNNN/`. Copy the printed
 report back to the development-PC checkout for review before D3 is marked complete. Do not proceed
 to D4 until the report says `status: passed`.
+
+## D4: run exactly one short offline inference
+
+D4 reuses the existing `avatar-ditto` environment, pinned source, and verified checkpoints. It
+does not install packages, recreate an environment, use GPU 1, stop a process, or run a batch.
+
+First copy the current tracked project files from the development PC over the GPU project copy.
+Keep the GPU machine's existing `.runtime/ditto/` directory because it contains the verified source
+and checkpoints. In the GPU VS Code PowerShell terminal, restore the same session-scoped Conda
+paths shown in D3, then confirm that no `DITTO-EXP-*` directory already exists:
+
+```powershell
+Get-ChildItem .\results\experiments -Directory -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -like "DITTO-EXP-*" }
+```
+
+The command must return nothing. Then inspect both GPUs without changing either one:
+
+```powershell
+nvidia-smi --query-gpu=index,name,memory.used,memory.free,memory.total,utilization.gpu --format=csv
+```
+
+Run the single guarded inference from the repository root:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+    -File .\scripts\gpu\run_ditto_d4.ps1 `
+    -GpuIndex 0
+```
+
+The wrapper requires the passing D3 evidence, an idle GPU 0, at least 12000 MiB free VRAM, the
+isolated environment, and the verified runtime manifests. It derives exactly the first 5.000
+seconds of P007's WAV under ignored `.runtime/`, runs the offline PyTorch pipeline once, and writes
+`results/experiments/DITTO-EXP-0001/`.
+
+Whether the command succeeds or fails, do not run it again. Copy the entire `DITTO-EXP-0001`
+directory back to the development PC, including `generated.mp4` when present. Complete the seven
+pending visual-review scores in `notes.md` before planning D5. The original 28.967-second WAV is
+not modified and remains reserved for later complete-audio testing.
