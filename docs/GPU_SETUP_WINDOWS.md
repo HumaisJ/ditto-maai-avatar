@@ -29,6 +29,10 @@ The script stops before creating the environment if prerequisites fail, another 
 using GPU 0, or `avatar-ditto` already exists. Activity on other GPUs is left untouched. It records
 either a passing or failed D2 report under `results/environment/`.
 
+On a Windows WDDM display GPU, ordinary `G` and `C+G` desktop processes are recorded but do not
+block D2. Compute-only `C`, `M`, and `M+C` processes do block it. The selected GPU must also remain
+at or below 20% utilization with at least 12000 MiB free VRAM. The script never stops processes.
+
 Do not delete or recreate an existing environment automatically. Return its report for review.
 
 ## Return and publish the checkpoint report

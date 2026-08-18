@@ -124,6 +124,22 @@ it is not silently removed or marked complete.
 - **Next step:** Copy the corrected setup script to the GPU project and rerun with the same isolated
   Conda paths and GPU 0 selection.
 
+### 2026-08-18 — D2 Windows WDDM process classification correction
+
+- **Result:** Failed GPU attempt preserved; local correction prepared.
+- **Goal/stage:** Goal 2 / Stage D2.
+- **Work:** Replaced the WDDM-incompatible compute query with selected-GPU process-type filtering,
+  retained utilization protection, and added a 12000 MiB free-VRAM threshold.
+- **Files/evidence:** GPU report `D2-GPU-ENV-0002`, setup and validation scripts, runbook, and focused
+  regression tests.
+- **Verification:** Ruff passed and all 60 tests passed, including WDDM desktop-process allowance,
+  compute-only process blocking, selected-GPU filtering, and PowerShell parsing.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** Normal Windows `G` and `C+G` desktop processes are observed but allowed;
+  compute-only `C`, `M`, and `M+C` processes block D2. No process is stopped or modified.
+- **Next step:** Copy the verified correction to the GPU project and rerun on GPU 0, preserving the
+  next report as `D2-GPU-ENV-0003`.
+
 ## Entry template
 
 ### YYYY-MM-DD — Milestone name

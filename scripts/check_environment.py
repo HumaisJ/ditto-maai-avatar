@@ -16,6 +16,11 @@ from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "results" / "environment"
+BLOCKING_PROCESS_TYPES = {"C", "M", "M+C"}
+PROCESS_ROW_PATTERN = re.compile(
+    r"^\|\s*(?P<gpu>\d+)\s+(?:N/A|\d+)\s+(?:N/A|\d+)\s+"
+    r"(?P<pid>\d+)\s+(?P<type>C\+G|M\+C|C|G|M|O)\s+"
+)
 
 
 def utc_now() -> str:
@@ -46,6 +51,18 @@ def run_command(command: list[str], *, timeout: int = 30) -> tuple[int, str]:
     return result.returncode, output
 
 
+def find_blocking_compute_processes(process_table: str, gpu_index: int) -> list[str]:
+    """Return compute-only process rows for one GPU from standard nvidia-smi output."""
+    blocking: list[str] = []
+    for line in process_table.splitlines():
+        match = PROCESS_ROW_PATTERN.match(line)
+        if match is None or int(match.group("gpu")) != gpu_index:
+            continue
+        if match.group("type") in BLOCKING_PROCESS_TYPES:
+            blocking.append(line.strip())
+    return blocking
+
+
 def query_nvidia_smi(gpu_index: int = 0) -> tuple[dict[str, Any] | None, str, list[str]]:
     """Return selected-GPU facts, raw output, and its active compute-process rows."""
     executable = shutil.which("nvidia-smi")
@@ -54,7 +71,7 @@ def query_nvidia_smi(gpu_index: int = 0) -> tuple[dict[str, Any] | None, str, li
 
     query = [
         executable,
-        "--query-gpu=name,memory.total,driver_version,utilization.gpu",
+        "--query-gpu=name,memory.total,memory.free,driver_version,utilization.gpu",
         "--format=csv,noheader,nounits",
         f"--id={gpu_index}",
     ]
@@ -62,23 +79,20 @@ def query_nvidia_smi(gpu_index: int = 0) -> tuple[dict[str, Any] | None, str, li
     if code != 0 or not raw_gpu:
         return None, raw_gpu or "nvidia-smi GPU query failed", []
     values = [value.strip() for value in raw_gpu.splitlines()[0].split(",")]
-    if len(values) != 4:
+    if len(values) != 5:
         return None, raw_gpu, []
 
-    process_query = [
-        executable,
-        "--query-compute-apps=pid,process_name,used_memory",
-        "--format=csv,noheader,nounits",
-        f"--id={gpu_index}",
-    ]
-    _, raw_processes = run_command(process_query)
-    processes = [line.strip() for line in raw_processes.splitlines() if line.strip()]
+    process_code, raw_processes = run_command([executable, f"--id={gpu_index}"])
+    processes = find_blocking_compute_processes(raw_processes, gpu_index)
+    if process_code != 0:
+        processes.append("selected GPU process inspection failed")
     try:
         gpu = {
             "name": values[0],
             "memory_total_mb": float(values[1]),
-            "driver_version": values[2],
-            "utilization_gpu_percent": float(values[3]),
+            "memory_free_mb": float(values[2]),
+            "driver_version": values[3],
+            "utilization_gpu_percent": float(values[4]),
         }
     except ValueError:
         return None, raw_gpu, processes
@@ -128,6 +142,7 @@ def evaluate_environment(
     min_vram_mb: float = 15_000,
     min_driver: str = "570.65",
     max_utilization_percent: float = 20,
+    min_free_vram_mb: float = 12_000,
 ) -> list[str]:
     """Return every failed D2 acceptance condition."""
     errors: list[str] = []
@@ -149,6 +164,8 @@ def evaluate_environment(
             errors.append(f"expected GPU name containing {expected_gpu!r}, got {gpu.get('name')!r}")
         if float(gpu.get("memory_total_mb", 0)) < min_vram_mb:
             errors.append(f"GPU VRAM must be at least {min_vram_mb:.0f} MiB")
+        if float(gpu.get("memory_free_mb", 0)) < min_free_vram_mb:
+            errors.append(f"GPU free VRAM must be at least {min_free_vram_mb:.0f} MiB")
         try:
             driver_ok = parse_version(str(gpu.get("driver_version", ""))) >= parse_version(
                 min_driver
@@ -244,6 +261,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--min-vram-mb", type=float, default=15_000)
     parser.add_argument("--min-driver", default="570.65")
     parser.add_argument("--max-utilization", type=float, default=20)
+    parser.add_argument("--min-free-vram-mb", type=float, default=12_000)
     parser.add_argument("--gpu-index", type=int, default=0)
     return parser
 
@@ -271,6 +289,7 @@ def main(argv: list[str] | None = None) -> int:
         min_vram_mb=args.min_vram_mb,
         min_driver=args.min_driver,
         max_utilization_percent=args.max_utilization,
+        min_free_vram_mb=args.min_free_vram_mb,
     )
     output_root = args.output_root
     if not output_root.is_absolute():

@@ -54,6 +54,10 @@ def test_setup_script_uses_selected_gpu_without_requiring_git() -> None:
     assert '$env:CUDA_VISIBLE_DEVICES = "$GpuIndex"' in content
     assert '@("conda", "git", "nvidia-smi")' not in content
     assert "git lfs version" not in content
+    assert "memory.free" in content
+    assert "compute-only process" in content
+    assert "Stop-Process" not in content
+    assert "taskkill" not in content.casefold()
 
 
 @pytest.mark.skipif(shutil.which("powershell") is None, reason="PowerShell is unavailable")
@@ -71,3 +75,23 @@ def test_failure_report_number_accepts_measure_object_double() -> None:
     )
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == "D2-GPU-ENV-0002"
+
+
+@pytest.mark.skipif(shutil.which("powershell") is None, reason="PowerShell is unavailable")
+def test_powershell_wddm_process_pattern_blocks_only_compute_types() -> None:
+    command = (
+        "$pattern='^\\|\\s*0\\s+(?:N/A|\\d+)\\s+(?:N/A|\\d+)\\s+\\d+\\s+"
+        "(?:C|M|M\\+C)\\s+'; "
+        "$desktop='| 0 N/A N/A 2444 C+G C:\\Windows\\explorer.exe N/A |'; "
+        "$compute='| 0 N/A N/A 47624 C D:\\env\\python.exe N/A |'; "
+        "if ($desktop -match $pattern) { exit 1 }; "
+        "if ($compute -notmatch $pattern) { exit 1 }"
+    )
+    result = subprocess.run(
+        ["powershell", "-NoProfile", "-Command", command],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stderr

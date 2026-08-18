@@ -19,6 +19,7 @@ $environmentName = "avatar-ditto"
 $minimumDriver = [version]"570.65"
 $minimumFreeBytes = 20GB
 $minimumVramMb = 15000
+$minimumFreeVramMb = 12000
 $maximumUtilization = 20
 $validationReportCreated = $false
 
@@ -72,18 +73,24 @@ try {
         throw "At least 20 GiB of free disk space is required."
     }
 
-    $gpuLine = nvidia-smi --query-gpu=name,memory.total,driver_version,utilization.gpu --format=csv,noheader,nounits --id=$GpuIndex
-    if ($LASTEXITCODE -ne 0 -or -not $gpuLine) { throw "Unable to query the first NVIDIA GPU." }
+    $gpuLine = nvidia-smi --query-gpu=name,memory.total,memory.free,driver_version,utilization.gpu --format=csv,noheader,nounits --id=$GpuIndex
+    if ($LASTEXITCODE -ne 0 -or -not $gpuLine) { throw "Unable to query GPU $GpuIndex." }
     $gpuValues = $gpuLine.Split(',') | ForEach-Object { $_.Trim() }
-    if ($gpuValues.Count -ne 4) { throw "Unexpected nvidia-smi GPU output: $gpuLine" }
+    if ($gpuValues.Count -ne 5) { throw "Unexpected nvidia-smi GPU output: $gpuLine" }
     if ($gpuValues[0] -notlike "*RTX 5060 Ti*") { throw "Unexpected GPU: $($gpuValues[0])" }
     if ([double]$gpuValues[1] -lt $minimumVramMb) { throw "GPU VRAM is below 15000 MiB." }
-    if ([version]$gpuValues[2] -lt $minimumDriver) { throw "NVIDIA driver must be at least 570.65." }
-    if ([double]$gpuValues[3] -gt $maximumUtilization) {
+    if ([double]$gpuValues[2] -lt $minimumFreeVramMb) { throw "GPU free VRAM is below 12000 MiB." }
+    if ([version]$gpuValues[3] -lt $minimumDriver) { throw "NVIDIA driver must be at least 570.65." }
+    if ([double]$gpuValues[4] -gt $maximumUtilization) {
         throw "GPU utilization exceeds the 20 percent safety threshold."
     }
-    $computeProcesses = nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv,noheader,nounits --id=$GpuIndex
-    if ($computeProcesses) { throw "Another compute process is using GPU $GpuIndex`: $computeProcesses" }
+    $processTable = nvidia-smi --id=$GpuIndex
+    if ($LASTEXITCODE -ne 0) { throw "Unable to inspect processes on GPU $GpuIndex." }
+    $blockingProcessPattern = "^\|\s*$GpuIndex\s+(?:N/A|\d+)\s+(?:N/A|\d+)\s+\d+\s+(?:C|M|M\+C)\s+"
+    $computeProcesses = @($processTable | Where-Object { $_ -match $blockingProcessPattern })
+    if ($computeProcesses.Count -gt 0) {
+        throw "Another compute-only process is using GPU $GpuIndex`: $($computeProcesses -join '; ')"
+    }
 
     $environmentData = conda env list --json | ConvertFrom-Json
     $existingEnvironment = $environmentData.envs | Where-Object {

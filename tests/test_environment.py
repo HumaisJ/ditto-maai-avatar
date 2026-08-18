@@ -16,6 +16,7 @@ def _valid_snapshot() -> dict:
         "gpu": {
             "name": "NVIDIA GeForce RTX 5060 Ti",
             "memory_total_mb": 16303.0,
+            "memory_free_mb": 15100.0,
             "driver_version": "580.10",
             "utilization_gpu_percent": 0.0,
         },
@@ -49,8 +50,8 @@ def test_query_nvidia_smi_limits_queries_to_selected_gpu(monkeypatch) -> None:
 
     def fake_run(command: list[str], *, timeout: int = 30) -> tuple[int, str]:
         calls.append(command)
-        if "--query-gpu=name,memory.total,driver_version,utilization.gpu" in command:
-            return 0, "NVIDIA GeForce RTX 5060 Ti, 16311, 591.86, 0"
+        if "--query-gpu=name,memory.total,memory.free,driver_version,utilization.gpu" in command:
+            return 0, "NVIDIA GeForce RTX 5060 Ti, 16311, 15153, 591.86, 0"
         return 0, ""
 
     monkeypatch.setattr(check_environment.shutil, "which", lambda _: "nvidia-smi.exe")
@@ -64,6 +65,25 @@ def test_query_nvidia_smi_limits_queries_to_selected_gpu(monkeypatch) -> None:
     assert all("--id=0" in command for command in calls)
 
 
+def test_wddm_graphics_processes_are_not_blocking() -> None:
+    process_table = """
+|    0   N/A  N/A   2444    C+G   C:\\Windows\\explorer.exe   N/A |
+|    0   N/A  N/A  16304    C+G   C:\\Microsoft VS Code\\Code.exe   N/A |
+"""
+    assert check_environment.find_blocking_compute_processes(process_table, 0) == []
+
+
+def test_compute_only_process_on_selected_gpu_is_blocking() -> None:
+    process_table = """
+|    0   N/A  N/A   2444    C+G   C:\\Windows\\explorer.exe   N/A |
+|    0   N/A  N/A  47624      C   D:\\env\\python.exe   N/A |
+|    1   N/A  N/A  57028      C   D:\\other\\python.exe   N/A |
+"""
+    blocking = check_environment.find_blocking_compute_processes(process_table, 0)
+    assert len(blocking) == 1
+    assert "47624" in blocking[0]
+
+
 @pytest.mark.parametrize(
     ("mutation", "expected_error"),
     [
@@ -72,6 +92,7 @@ def test_query_nvidia_smi_limits_queries_to_selected_gpu(monkeypatch) -> None:
         (lambda value: value.update(ffmpeg=None), "ffmpeg is not available"),
         (lambda value: value["gpu"].update(name="NVIDIA T600"), "expected GPU name"),
         (lambda value: value["gpu"].update(memory_total_mb=4096), "GPU VRAM"),
+        (lambda value: value["gpu"].update(memory_free_mb=4096), "free VRAM"),
         (lambda value: value["gpu"].update(driver_version="560.00"), "NVIDIA driver"),
         (lambda value: value["gpu"].update(utilization_gpu_percent=50), "utilization"),
         (
