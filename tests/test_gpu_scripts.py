@@ -54,3 +54,20 @@ def test_setup_script_uses_selected_gpu_without_requiring_git() -> None:
     assert '$env:CUDA_VISIBLE_DEVICES = "$GpuIndex"' in content
     assert '@("conda", "git", "nvidia-smi")' not in content
     assert "git lfs version" not in content
+
+
+@pytest.mark.skipif(shutil.which("powershell") is None, reason="PowerShell is unavailable")
+def test_failure_report_number_accepts_measure_object_double() -> None:
+    content = GPU_SCRIPTS[0].read_text(encoding="utf-8")
+    assert '"D2-GPU-ENV-{0:D4}" -f ([int]$next)' in content
+
+    command = '$next = [double]2; "D2-GPU-ENV-{0:D4}" -f ([int]$next)'
+    result = subprocess.run(
+        ["powershell", "-NoProfile", "-Command", command],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "D2-GPU-ENV-0002"

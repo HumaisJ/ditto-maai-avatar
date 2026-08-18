@@ -108,6 +108,22 @@ it is not silently removed or marked complete.
 - **Next step:** Copy the materialized project folder to the GPU machine and run the guarded D2 setup
   with `-GpuIndex 0`.
 
+### 2026-08-18 — D2 failure-report numbering correction
+
+- **Result:** Failed GPU attempt preserved; local correction complete.
+- **Goal/stage:** Goal 2 / Stage D2.
+- **Work:** Diagnosed and corrected a PowerShell formatting error that occurred when allocating the
+  report number after `D2-GPU-ENV-0001` already existed.
+- **Files/evidence:** GPU terminal traceback at `setup_ditto_env.ps1:33`; corrected setup script and
+  regression test.
+- **Verification:** The regression reproduces `Measure-Object`'s `System.Double` result and confirms
+  that the corrected formatter produces `D2-GPU-ENV-0002`.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** The formatting error masked the original preflight failure. Environment
+  creation did not start because the creation message was never reached.
+- **Next step:** Copy the corrected setup script to the GPU project and rerun with the same isolated
+  Conda paths and GPU 0 selection.
+
 ## Entry template
 
 ### YYYY-MM-DD — Milestone name

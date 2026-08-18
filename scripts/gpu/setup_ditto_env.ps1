@@ -30,7 +30,7 @@ function New-FailureReport {
         Where-Object { $_.Name -match '^D2-GPU-ENV-(\d+)$' } |
         ForEach-Object { [int]$Matches[1] }
     $next = if ($numbers) { ($numbers | Measure-Object -Maximum).Maximum + 1 } else { 1 }
-    $report = Join-Path $outputRoot ("D2-GPU-ENV-{0:D4}" -f $next)
+    $report = Join-Path $outputRoot ("D2-GPU-ENV-{0:D4}" -f ([int]$next))
     New-Item -ItemType Directory -Path $report | Out-Null
     $payload = [ordered]@{
         checkpoint_id = Split-Path -Leaf $report
