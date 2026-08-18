@@ -158,6 +158,22 @@ it is not silently removed or marked complete.
 - **Next step:** Copy the two corrected scripts to the GPU machine and run only the D2 validator in
   the existing `avatar-ditto` environment.
 
+### 2026-08-18 — D2 custom-prefix environment identity correction
+
+- **Result:** GPU/CUDA validation checks passed; environment-name assertion produced one false
+  failure.
+- **Goal/stage:** Goal 2 / Stage D2.
+- **Work:** Updated environment identity validation to accept either `CONDA_DEFAULT_ENV` or the
+  basename of `CONDA_PREFIX`, supporting the isolated custom environment directory.
+- **Files/evidence:** GPU report `D2-GPU-ENV-0003`, validator, and custom-prefix regression test.
+- **Verification:** Ruff passed and all 63 tests passed, including the custom-prefix environment
+  identity regression.
+- **Commit:** Included in this milestone commit.
+- **Decision/limitation:** Report `0003` had no CUDA, PyTorch, GPU, FFmpeg, utilization, VRAM, or
+  compute-process errors. D2 remains in progress until the corrected validator records a pass.
+- **Next step:** Copy the corrected validator to the GPU machine and rerun it, preserving report
+  `D2-GPU-ENV-0004`.
+
 ## Entry template
 
 ### YYYY-MM-DD — Milestone name

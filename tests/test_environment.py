@@ -51,6 +51,15 @@ def test_evaluate_environment_accepts_valid_blackwell_snapshot() -> None:
     assert check_environment.evaluate_environment(_valid_snapshot()) == []
 
 
+def test_evaluate_environment_accepts_custom_prefix_path() -> None:
+    snapshot = _valid_snapshot()
+    snapshot["conda_environment"] = (
+        r"D:\Data of all Students\Humaisa\conda-envs\avatar-ditto"
+    )
+    snapshot["conda_prefix_name"] = "avatar-ditto"
+    assert check_environment.evaluate_environment(snapshot) == []
+
+
 def test_query_nvidia_smi_limits_queries_to_selected_gpu(monkeypatch) -> None:
     calls: list[list[str]] = []
 

@@ -147,10 +147,19 @@ def evaluate_environment(
 ) -> list[str]:
     """Return every failed D2 acceptance condition."""
     errors: list[str] = []
-    if snapshot.get("conda_environment") != expected_environment:
+    environment_names = {
+        value
+        for value in (
+            snapshot.get("conda_environment"),
+            snapshot.get("conda_prefix_name"),
+        )
+        if isinstance(value, str) and value
+    }
+    if expected_environment not in environment_names:
         errors.append(
             f"active Conda environment must be {expected_environment!r}, "
-            f"got {snapshot.get('conda_environment')!r}"
+            f"got CONDA_DEFAULT_ENV={snapshot.get('conda_environment')!r} and "
+            f"prefix name={snapshot.get('conda_prefix_name')!r}"
         )
     if snapshot.get("operating_system") != "Windows":
         errors.append("D2 environment must run on Windows")
